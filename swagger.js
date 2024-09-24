@@ -5,7 +5,7 @@ const doc = {
     title: "FIRE-APP",
     description: "Version 1.0"
   },
-  host: "fire-u79h.onrender.com",  
+  host: "fire-backend-hmll.onrender.com",  
   basePath: "/",
   schemes: ["https"],  
 };

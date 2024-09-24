@@ -5,7 +5,7 @@
     "description": "Version 1.0",
     "version": "1.0.0"
   },
-  "host": "fire-u79h.onrender.com",
+  "host": "fire-backend-hmll.onrender.com",
   "basePath": "/",
   "schemes": [
     "https"
