@@ -1,4 +1,5 @@
 const User = require("../Model/emailModel");
+const Profile = require("../Model/userModel"); // Import Profile model
 const nodemailer = require("nodemailer");
 const Cryptr = require("cryptr");
 const jwt = require("jsonwebtoken");
@@ -28,6 +29,7 @@ const generateToken = (email, userId) => {
   });
 };
 
+// Check for expired token and refresh if necessary
 const checkTokenExpiry = async (req, res, next) => {
   const { token } = req.body;
   if (!token) return next();
@@ -57,8 +59,8 @@ const checkTokenExpiry = async (req, res, next) => {
   }
 };
 
+// Sign in and send OTP
 exports.Signin = async (req, res) => {
-  //#swagger.tags = ['Login']
   const { email } = req.body;
 
   if (!email) {
@@ -117,8 +119,8 @@ exports.Signin = async (req, res) => {
   }
 };
 
+// Verify OTP and check for profile
 exports.verifyOTP = async (req, res) => {
-  //#swagger.tags = ['Login']
   const { email, otp } = req.body;
 
   if (!email || !otp) {
@@ -146,12 +148,16 @@ exports.verifyOTP = async (req, res) => {
       user.token = token;
       await user.save();
 
+      // Check if the user has a profile in the Profile collection
+      const userProfile = await Profile.findOne({ userId: user._id });
+
       res.json({
         success: true,
         message: "OTP is valid, user logged in",
         token,
         loggedIn: user.loggedIn,
         userId: user._id,
+        userProfile: userProfile ? true : false, // If profile exists, true, otherwise false
       });
     } else {
       res.status(401).json({ error: "Invalid OTP" });
@@ -162,8 +168,8 @@ exports.verifyOTP = async (req, res) => {
   }
 };
 
+// Logout
 exports.logout = async (req, res) => {
-  //#swagger.tags = ['Login']
   const { userId } = req.body;
 
   if (!userId) {
@@ -186,8 +192,8 @@ exports.logout = async (req, res) => {
   }
 };
 
+// Refresh token
 exports.refreshToken = async (req, res) => {
-  //#swagger.tags = ['Login']
   const { token } = req.body;
 
   if (!token) {
@@ -209,8 +215,8 @@ exports.refreshToken = async (req, res) => {
   }
 };
 
+// Validate email and token
 exports.Validate = async (req, res) => {
-  //#swagger.tags = ['Login']
   const { email, token } = req.body;
 
   if (!email || !token) {

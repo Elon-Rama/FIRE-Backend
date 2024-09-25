@@ -23,9 +23,6 @@
     },
     "/api/user/signin": {
       "post": {
-        "tags": [
-          "Login"
-        ],
         "description": "",
         "parameters": [
           {
@@ -56,9 +53,6 @@
     },
     "/api/user/verify-otp": {
       "post": {
-        "tags": [
-          "Login"
-        ],
         "description": "",
         "parameters": [
           {
@@ -98,9 +92,6 @@
     },
     "/api/user/logout": {
       "post": {
-        "tags": [
-          "Login"
-        ],
         "description": "",
         "parameters": [
           {
@@ -134,9 +125,6 @@
     },
     "/api/user/refresh-token": {
       "post": {
-        "tags": [
-          "Login"
-        ],
         "description": "",
         "parameters": [
           {
@@ -167,9 +155,6 @@
     },
     "/api/user/validate": {
       "post": {
-        "tags": [
-          "Login"
-        ],
         "description": "",
         "parameters": [
           {
