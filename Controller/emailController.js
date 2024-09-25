@@ -1,5 +1,5 @@
 const User = require("../Model/emailModel");
-const Profile = require("../Model/userModel"); // Import Profile model
+const Profile = require("../Model/userModel"); 
 const nodemailer = require("nodemailer");
 const Cryptr = require("cryptr");
 const jwt = require("jsonwebtoken");

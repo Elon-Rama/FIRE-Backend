@@ -424,7 +424,7 @@
         }
       }
     },
-    "/api/question/calculate/{userId}": {
+    "/api/question/calculate/{fireId}": {
       "get": {
         "tags": [
           "FIRE-Question"
@@ -432,7 +432,7 @@
         "description": "",
         "parameters": [
           {
-            "name": "userId",
+            "name": "fireId",
             "in": "path",
             "required": true,
             "type": "string"

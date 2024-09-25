@@ -63,6 +63,7 @@ exports.Create = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "FireQuestion created successfully",
+      fireId: fireQuestionData._id, // Return the generated fireId
       fireQuestionData,
     });
   } catch (error) {
@@ -76,10 +77,10 @@ exports.Create = async (req, res) => {
 
 exports.Calculate = async (req, res) => {
   //#swagger.tags = ['FIRE-Question']
-  const { userId } = req.params;
+  const { fireId } = req.params; // Get fireId from params
 
   try {
-    const fireQuestionData = await FireQuestion.findOne({ userId });
+    const fireQuestionData = await FireQuestion.findById(fireId); // Find by fireId
 
     if (!fireQuestionData) {
       return res.status(404).json({
@@ -140,7 +141,7 @@ exports.Calculate = async (req, res) => {
       extraMonthlySavings: Math.round(extraMonthlySavings),
     };
 
-    // Remove the saving lines to prevent any data from being saved
+    // Optionally save the calculation results back to the document
     fireQuestionData.calculationResults = results;
     await fireQuestionData.save();
 
