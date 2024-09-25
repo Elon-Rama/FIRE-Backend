@@ -1,7 +1,6 @@
 const User = require("../Model/emailModel");
 const FireQuestion = require("../Model/fireModel");
 
-// Utility function to format numbers with commas
 function formatNumberWithCommas(number) {
   const numStr = number.toString();
   const [integerPart, decimalPart] = numStr.split(".");
@@ -18,9 +17,8 @@ function formatNumberWithCommas(number) {
   return decimalPart ? `${formattedInteger}.${decimalPart}` : formattedInteger;
 }
 
-// Controller to create FireQuestion
 exports.Create = async (req, res) => {
-     //#swagger.tags = ['FIRE-Question']
+  //#swagger.tags = ['FIRE-Question']
   const {
     userId,
     occupation,
@@ -77,7 +75,7 @@ exports.Create = async (req, res) => {
 };
 
 exports.Calculate = async (req, res) => {
-    //#swagger.tags = ['FIRE-Question']
+  //#swagger.tags = ['FIRE-Question']
   const { userId } = req.params;
 
   try {
@@ -115,7 +113,6 @@ exports.Calculate = async (req, res) => {
     const monthlyRate = prereturn / 100 / 12;
     const monthsToRetirement = yearsToRetirement * 12;
 
-    // Calculate the amount accumulated with current monthly savings
     const accumulatedSavingsFromMonthly =
       monthlysavings *
       ((Math.pow(1 + monthlyRate, monthsToRetirement) - 1) / monthlyRate);
@@ -132,7 +129,21 @@ exports.Calculate = async (req, res) => {
           (Math.pow(1 + prereturn / 100, yearsToRetirement) - 1)
         : 0;
 
-    // Round the values before formatting
+    const results = {
+      yearsToRetirement,
+      adjustedExpense: Math.round(adjustedExpense),
+      targetSavings: Math.round(targetSavings),
+      totalSavingsAtRetirement: Math.round(totalSavingsAtRetirement),
+      accumulatedSavingsFromMonthly: Math.round(accumulatedSavingsFromMonthly),
+      savingsShortfall: Math.round(savingsShortfall),
+      extraOneTimeSavings: Math.round(extraOneTimeSavings),
+      extraMonthlySavings: Math.round(extraMonthlySavings),
+    };
+
+    // Remove the saving lines to prevent any data from being saved
+    fireQuestionData.calculationResults = results;
+    await fireQuestionData.save();
+
     res.status(200).json({
       success: true,
       message: "Retirement calculation successful",
@@ -145,7 +156,7 @@ exports.Calculate = async (req, res) => {
         ),
         accumulatedSavingsFromMonthly: formatNumberWithCommas(
           Math.round(accumulatedSavingsFromMonthly)
-        ), // New field
+        ),
         savingsShortfall: formatNumberWithCommas(Math.round(savingsShortfall)),
         extraOneTimeSavings: formatNumberWithCommas(
           Math.round(extraOneTimeSavings)

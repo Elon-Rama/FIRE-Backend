@@ -51,6 +51,16 @@ const FireQuestionSchema = new mongoose.Schema({
     type: Number,
     required: false,
   },
+
+  yearsLeftForRetirement: Number,
+  monthlyExpensesAfterRetirement: Number,
+  totalSavingsAtRetirement: Number,
+  targetedSavings: Number,
+  shortfallInSavings: Number,
+  accumulatedSavings: Number,
+  existingSavingsGrowth: Number,
+  extraOneTimeSavingsRequired: Number,
+  extraMonthlySavingsRequired: Number,
 });
 
 module.exports = mongoose.model("FireQuestion", FireQuestionSchema);
