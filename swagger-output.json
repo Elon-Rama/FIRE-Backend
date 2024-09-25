@@ -21,7 +21,7 @@
         }
       }
     },
-    "/email/user/signin": {
+    "/api/user/signin": {
       "post": {
         "tags": [
           "Login"
@@ -54,7 +54,7 @@
         }
       }
     },
-    "/email/user/verify-otp": {
+    "/api/user/verify-otp": {
       "post": {
         "tags": [
           "Login"
@@ -96,7 +96,7 @@
         }
       }
     },
-    "/email/user/logout": {
+    "/api/user/logout": {
       "post": {
         "tags": [
           "Login"
@@ -132,7 +132,7 @@
         }
       }
     },
-    "/email/user/refresh-token": {
+    "/api/user/refresh-token": {
       "post": {
         "tags": [
           "Login"
@@ -165,7 +165,7 @@
         }
       }
     },
-    "/email/user/validate": {
+    "/api/user/validate": {
       "post": {
         "tags": [
           "Login"
@@ -204,8 +204,7 @@
         }
       }
     },
-    
-    "/user/profile/create": {
+    "/api/profile/create": {
       "post": {
         "tags": [
           "User-Profile"
@@ -253,7 +252,7 @@
         }
       }
     },
-    "/user/profile/getById/{profile_id}": {
+    "/api/profile/getById/{profile_id}": {
       "get": {
         "tags": [
           "User-Profile"
@@ -280,7 +279,7 @@
         }
       }
     },
-    "/user/profile/delete/{profile_id}": {
+    "/api/profile/delete/{profile_id}": {
       "delete": {
         "tags": [
           "User-Profile"
@@ -307,7 +306,7 @@
         }
       }
     },
-    "/user/profile/getAll": {
+    "/api/profile/getAll": {
       "get": {
         "tags": [
           "User-Profile"
@@ -323,7 +322,7 @@
         }
       }
     },
-    "/user/profile/update/{profile_id}": {
+    "/api/profile/update/{profile_id}": {
       "put": {
         "tags": [
           "User-Profile"
@@ -374,8 +373,7 @@
         }
       }
     },
-    
-    "/fire/question/create": {
+    "/api/question/create": {
       "post": {
         "tags": [
           "FIRE-Question"
@@ -441,7 +439,7 @@
         }
       }
     },
-    "/fire/question/calculate/{userId}": {
+    "/api/question/calculate/{userId}": {
       "get": {
         "tags": [
           "FIRE-Question"

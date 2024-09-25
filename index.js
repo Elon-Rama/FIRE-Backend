@@ -9,9 +9,10 @@ const mongodb = require("./Mongo/DB");
 require("dotenv").config();
 
 // Import routes
-const loginRoutes = require("./Routes/route");
-const userRoutes = require("./Routes/route");
-const fireRoutes  = require("./Routes/route");
+// const loginRoutes = require("./Routes/route");
+// const userRoutes = require("./Routes/route");
+// const fireRoutes  = require("./Routes/route");
+const route = require('./Routes/route');
 
 // Swagger setup
 const swaggerDocument = require("./swagger-output.json");
@@ -32,10 +33,10 @@ app.use(
 
 // Routes
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.use("/email", loginRoutes);
-app.use("/user", userRoutes);
-app.use('/fire',fireRoutes);
-
+// app.use("/email", loginRoutes);
+// app.use("/user", userRoutes);
+// app.use('/fire',fireRoutes);
+app.use('/api',route)
 // MongoDB Connection
 mongoose
     .connect(mongodb.url, { useNewUrlParser: true, useUnifiedTopology: true })
