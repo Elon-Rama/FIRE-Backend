@@ -63,7 +63,7 @@ exports.Create = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "FireQuestion created successfully",
-      fireId: fireQuestionData._id, // Return the generated fireId
+      fireId: fireQuestionData._id,
       fireQuestionData,
     });
   } catch (error) {
@@ -77,10 +77,10 @@ exports.Create = async (req, res) => {
 
 exports.Calculate = async (req, res) => {
   //#swagger.tags = ['FIRE-Question']
-  const { fireId } = req.params; // Get fireId from params
+  const { fireId } = req.params;
 
   try {
-    const fireQuestionData = await FireQuestion.findById(fireId); // Find by fireId
+    const fireQuestionData = await FireQuestion.findById(fireId);
 
     if (!fireQuestionData) {
       return res.status(404).json({
@@ -124,45 +124,69 @@ exports.Calculate = async (req, res) => {
     const savingsShortfall = targetSavings - totalSavingsAtRetirement;
 
     const extraOneTimeSavings = savingsShortfall > 0 ? savingsShortfall : 0;
+
     const extraMonthlySavings =
       extraOneTimeSavings > 0
         ? (extraOneTimeSavings * (prereturn / 100)) /
-          (Math.pow(1 + prereturn / 100, yearsToRetirement) - 1)
+          (Math.pow(1 + prereturn / 100, yearsToRetirement) - 1) /
+          12
         : 0;
 
     const results = {
-      yearsToRetirement,
-      adjustedExpense: Math.round(adjustedExpense),
-      targetSavings: Math.round(targetSavings),
+      yearsLeftForRetirement: Math.round(yearsToRetirement),
+      monthlyExpensesAfterRetirement: Math.round(adjustedExpense),
+      targetedSavings: Math.round(targetSavings),
       totalSavingsAtRetirement: Math.round(totalSavingsAtRetirement),
-      accumulatedSavingsFromMonthly: Math.round(accumulatedSavingsFromMonthly),
-      savingsShortfall: Math.round(savingsShortfall),
-      extraOneTimeSavings: Math.round(extraOneTimeSavings),
-      extraMonthlySavings: Math.round(extraMonthlySavings),
+      accumulatedSavings: Math.round(accumulatedSavingsFromMonthly),
+      shortfallInSavings: Math.round(savingsShortfall),
+      existingSavingsGrowth: Math.round(savingsAtRetirement),
+      extraOneTimeSavingsRequired: Math.round(extraOneTimeSavings),
+      extraMonthlySavingsRequired: Math.round(extraMonthlySavings),
     };
 
-    // Optionally save the calculation results back to the document
-    fireQuestionData.calculationResults = results;
+    fireQuestionData.yearsLeftForRetirement = results.yearsLeftForRetirement;
+    fireQuestionData.monthlyExpensesAfterRetirement =
+      results.monthlyExpensesAfterRetirement;
+    fireQuestionData.totalSavingsAtRetirement =
+      results.totalSavingsAtRetirement;
+    fireQuestionData.targetedSavings = results.targetedSavings;
+    fireQuestionData.shortfallInSavings = results.shortfallInSavings;
+    fireQuestionData.accumulatedSavings = results.accumulatedSavings;
+    fireQuestionData.existingSavingsGrowth = results.existingSavingsGrowth;
+    fireQuestionData.extraOneTimeSavingsRequired =
+      results.extraOneTimeSavingsRequired;
+    fireQuestionData.extraMonthlySavingsRequired =
+      results.extraMonthlySavingsRequired;
+
     await fireQuestionData.save();
 
     res.status(200).json({
       success: true,
-      message: "Retirement calculation successful",
+      message: "Retirement calculation successful and data saved",
       data: {
-        yearsToRetirement,
-        adjustedExpense: formatNumberWithCommas(Math.round(adjustedExpense)),
-        targetSavings: formatNumberWithCommas(Math.round(targetSavings)),
+        yearsLeftForRetirement: formatNumberWithCommas(
+          Math.round(yearsToRetirement)
+        ),
+        monthlyExpensesAfterRetirement: formatNumberWithCommas(
+          Math.round(adjustedExpense)
+        ),
+        targetedSavings: formatNumberWithCommas(Math.round(targetSavings)),
         totalSavingsAtRetirement: formatNumberWithCommas(
           Math.round(totalSavingsAtRetirement)
         ),
-        accumulatedSavingsFromMonthly: formatNumberWithCommas(
+        accumulatedSavings: formatNumberWithCommas(
           Math.round(accumulatedSavingsFromMonthly)
         ),
-        savingsShortfall: formatNumberWithCommas(Math.round(savingsShortfall)),
-        extraOneTimeSavings: formatNumberWithCommas(
+        shortfallInSavings: formatNumberWithCommas(
+          Math.round(savingsShortfall)
+        ),
+        existingSavingsGrowth: formatNumberWithCommas(
+          Math.round(savingsAtRetirement)
+        ),
+        extraOneTimeSavingsRequired: formatNumberWithCommas(
           Math.round(extraOneTimeSavings)
         ),
-        extraMonthlySavings: formatNumberWithCommas(
+        extraMonthlySavingsRequired: formatNumberWithCommas(
           Math.round(extraMonthlySavings)
         ),
       },
