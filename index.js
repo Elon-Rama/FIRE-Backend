@@ -1,4 +1,3 @@
-// index.js
 const express = require("express");
 const app = express();
 const session = require("express-session");
@@ -8,10 +7,6 @@ const cors = require("cors");
 const mongodb = require("./Mongo/DB");
 require("dotenv").config();
 
-// Import routes
-// const loginRoutes = require("./Routes/route");
-// const userRoutes = require("./Routes/route");
-// const fireRoutes  = require("./Routes/route");
 const route = require('./Routes/route');
 
 // Swagger setup
@@ -27,16 +22,14 @@ app.use(
         secret: "your_secret_key",
         resave: false,
         saveUninitialized: true,
-        cookie: { secure: false }, // Set to true if using HTTPS
+        cookie: { secure: false }, 
     })
 );
 
 // Routes
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-// app.use("/email", loginRoutes);
-// app.use("/user", userRoutes);
-// app.use('/fire',fireRoutes);
 app.use('/api',route)
+
 // MongoDB Connection
 mongoose
     .connect(mongodb.url, { useNewUrlParser: true, useUnifiedTopology: true })
