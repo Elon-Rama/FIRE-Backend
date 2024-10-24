@@ -36,6 +36,10 @@ const ChildExpensesSchema = new mongoose.Schema({
     ref: 'ExpensesMaster',
     required: true
   },
+  active: {
+    type: Boolean,
+    required: false,
+},
   category: [{
     type: String,
     required: true

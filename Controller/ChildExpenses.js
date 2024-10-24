@@ -86,11 +86,9 @@ exports.getAll = async (req, res) => {
       });
     }
 
-    const categories = await ChildExpenses.find({ userId }).populate({
-      path: "expensesId",
-      select: "title",
-    });
+    const categories = await ExpensesMaster.find({ userId });
 
+    const activeCategories = categories.filter((category) => category.active);
     if (categories.length === 0) {
       return res.status(404).json({
         statusCode: "1",
@@ -101,7 +99,7 @@ exports.getAll = async (req, res) => {
     res.status(200).json({
       statusCode: "0",
       message: "SubCategories data retrieved successfully",
-      data: categories,
+      data: activeCategories,
     });
   } catch (error) {
     res.status(500).json({

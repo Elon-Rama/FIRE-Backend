@@ -121,9 +121,9 @@ exports.deleteById = async (req, res) => {
     if (expenses) {
       expenses.active = !expenses.active;
       await expenses.save();
-
+      console.log("exp", expenses);
       if (!expenses.active) {
-        await ChildExpenses.deleteMany({ expensesId: req.params.expenses_id });
+        await ChildExpenses.findOne({ expensesId: req.params.expenses_id });
         res.status(200).json({
           statusCode: "0",
           message: "Expense inactivated successfully",
