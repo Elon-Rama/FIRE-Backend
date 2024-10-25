@@ -389,7 +389,7 @@ exports.getAll = async (req, res) => {
   }
 };
 
-// Delete a child expense by ID
+
 exports.delete = async (req, res) => {
   //#swagger.tags = ['Child-Expenses']
 
@@ -426,7 +426,7 @@ exports.delete = async (req, res) => {
   }
 };
 
-// Search for child expenses by category
+
 exports.search = async (req, res) => {
   //#swagger.tags = ['Child-Expenses']
 

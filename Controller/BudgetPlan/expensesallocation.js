@@ -1,6 +1,7 @@
 const User = require("../../Model/emailModel");
 const ExpensesMaster = require("../../Model/expensesModel");
 const ExpensesAllocation = require("../../Model/ExpensesAllocation");
+const ChildExpenses = require ('../../Model/ChildExpensesModel');
 
 exports.upsert = async (req, res) => {
    //#swagger.tags = ['Expenses Allocation']
@@ -69,6 +70,7 @@ exports.upsert = async (req, res) => {
       month: currentMonth,
       year: currentYear,
       titles: finalTitles,
+      active:true
     };
 
     const updateAllocation = await ExpensesAllocation.findOneAndUpdate(
@@ -93,7 +95,7 @@ exports.upsert = async (req, res) => {
           titles: finalTitles.map((title) => ({
             title: title.title,
             amount: title.amount,
-            active: title.active,
+            active: expense.active,
             _id: title._id,
           })),
         },

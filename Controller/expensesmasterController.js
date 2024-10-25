@@ -165,8 +165,8 @@ exports.deleteById = async (req, res) => {
         { active: expenses.active }
       );
       const updatedAllocations = await ExpensesAllocation.updateMany(
-        { expensesId: req.params.expenses_id },
-        { active: expenses.active }
+        { "titles.title": expenses.title },
+        { $set: { "titles.$.active": expenses.active } } 
       );
       const message = expenses.active
         ? "Expense activated successfully"
