@@ -112,7 +112,7 @@ exports.upsert = async (req, res) => {
 };
 
 exports.getAll = async (req, res) => {
-  //#swagger.tags = ['Child-Expenses']
+   //#swagger.tags = ['Expenses Allocation']
   try {
     const { userId } = req.query;
 

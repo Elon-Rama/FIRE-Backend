@@ -34,6 +34,7 @@ const generateToken = (email, userId) => {
 };
 
 exports.Signin = async (req, res) => {
+  //#swagger.tags = ['Login-User']
   const { email } = req.body;
 
   if (!email) {
@@ -93,6 +94,7 @@ exports.Signin = async (req, res) => {
 };
 
 exports.verifyOTP = async (req, res) => {
+  //#swagger.tags = ['Login-User']
   const { email, otp } = req.body;
 
   if (!email || !otp) {

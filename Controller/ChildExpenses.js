@@ -53,6 +53,7 @@ exports.upsert = async (req, res) => {
         userId,
         expensesId,
         category,
+        active: true,
       });
 
       await newSubCategory.save();
@@ -89,7 +90,10 @@ exports.getAll = async (req, res) => {
         message: "user can not be found",
       });
     }
-    const categories = await ChildExpenses.find();
+    const categories = await ChildExpenses.find().populate(
+      "expensesId",
+      "title"
+    );
     res.status(200).json({
       statusCode: "0",
       message: "subCategories data retrived Successfully",
