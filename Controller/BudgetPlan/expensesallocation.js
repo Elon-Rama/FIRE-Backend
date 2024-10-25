@@ -1,10 +1,10 @@
 const User = require("../../Model/emailModel");
 const ExpensesMaster = require("../../Model/expensesModel");
 const ExpensesAllocation = require("../../Model/ExpensesAllocation");
-const ChildExpenses = require ('../../Model/ChildExpensesModel');
+const ChildExpenses = require("../../Model/ChildExpensesModel");
 
 exports.upsert = async (req, res) => {
-   //#swagger.tags = ['Expenses Allocation']
+  //#swagger.tags = ['Expenses Allocation']
   try {
     const { userId, titles } = req.body;
 
@@ -70,7 +70,7 @@ exports.upsert = async (req, res) => {
       month: currentMonth,
       year: currentYear,
       titles: finalTitles,
-      active:true
+      active: true,
     };
 
     const updateAllocation = await ExpensesAllocation.findOneAndUpdate(
@@ -146,7 +146,67 @@ exports.getAll = async (req, res) => {
   }
 };
 
+exports.getById = async (req, res) => {
+  //#swagger.tags = ['Expenses Allocation']
+  try {
+    const { userId, month, year } = req.params;
+
+    if (!userId || !month || !year) {
+      return res.status(400).json({
+        statusCode: "1",
+        message: "userId, month, and year are required",
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        statusCode: "1",
+        message: "User not found",
+      });
+    }
+
+    const allocation = await ExpensesAllocation.findOne({
+      userId,
+      month,
+      year,
+    });
+
+    if (!allocation) {
+      return res.status(404).json({
+        statusCode: "1",
+        message: "Expenses Allocation not found",
+      });
+    }
+
+    const response = {
+      statusCode: "0",
+      message: "Expenses Allocation fetched successfully",
+      data: {
+        userId: allocation.userId,
+        month: allocation.month,
+        year: allocation.year,
+        titles: allocation.titles.map((title) => ({
+          title: title.title,
+          amount: title.amount,
+          active: title.active,
+          _id: title._id,
+        })),
+      },
+    };
+
+    return res.status(200).json(response);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      statusCode: "1",
+      message: "Internal Server Error",
+    });
+  }
+};
+
 exports.delete = async (req, res) => {
+  //#swagger.tags = ['Expenses Allocation']
   const { allocationId } = req.params;
 
   try {

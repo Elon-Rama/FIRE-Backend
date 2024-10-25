@@ -188,27 +188,24 @@ exports.verifyOTP = async (req, res) => {
       });
       const currentYear = new Date().getFullYear();
 
-      // After creating or finding existing expenses
-const expensesMaster = await ExpensesMaster.find({ userId: user._id });
+      const expensesMaster = await ExpensesMaster.find({ userId: user._id });
 
-if (expensesMaster.length) {
-  const expensesTitles = expensesMaster.map((expense) => ({
-    title: expense.title,
-    active: expense.active,  // Use the active status from ExpensesMaster
-    amount: 0,
-  }));
+      if (expensesMaster.length) {
+        const expensesTitles = expensesMaster.map((expense) => ({
+          title: expense.title,
+          active: expense.active,
+          amount: 0,
+        }));
 
-  // Create a new ExpensesAllocation
-  const newExpensesAllocation = new ExpensesAllocation({
-    userId: user._id,
-    month: currentMonth,
-    year: currentYear,
-    titles: expensesTitles,
-  });
+        const newExpensesAllocation = new ExpensesAllocation({
+          userId: user._id,
+          month: currentMonth,
+          year: currentYear,
+          titles: expensesTitles,
+        });
 
-  await newExpensesAllocation.save();
-}
-
+        await newExpensesAllocation.save();
+      }
     }
     const userProfile = await Profile.findOne({ userId: user._id });
 
