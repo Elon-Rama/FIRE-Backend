@@ -3,6 +3,84 @@ const ExpensesMaster = require("../Model/expensesModel");
 const _ = require("lodash");
 const User = require("../Model/emailModel");
 
+// exports.upsert = async (req, res) => {
+//   //#swagger.tags = ['Child-Expenses']
+//   const { expensesId, category, userId } = req.body;
+
+//   try {
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return res.status(400).json({
+//         statusCode: "1",
+//         message: "User not found",
+//       });
+//     }
+
+//     const expenses = await ExpensesMaster.findById(expensesId);
+//     if (!expenses) {
+//       return res.status(400).json({
+//         statusCode: "1",
+//         message: "Expenses ID does not exist",
+//       });
+//     }
+
+//     const expensesTitle = await ExpensesMaster.findOne(title);
+//     if(!expensesTitle) {
+//       return res.status(400).json({
+//         statusCode: "1",
+//         message: "Expenses title does not exist",
+//       });
+//     }
+
+//     if (
+//       !Array.isArray(category) ||
+//       category.some((cat) => typeof cat !== "string")
+//     ) {
+//       return res.status(400).json({
+//         statusCode: "1",
+//         message: "Category must be an array of strings",
+//       });
+//     }
+
+//     const existingSubCategory = await ChildExpenses.findOne({ expensesId });
+
+//     if (existingSubCategory) {
+//       const updatedSubCategory = await ChildExpenses.findByIdAndUpdate(
+//         existingSubCategory._id,
+//         { $addToSet: { category: { $each: category } } },
+//         { new: true }
+//       );
+
+//       return res.status(200).json({
+//         statusCode: "0",
+//         message: "SubCategory updated successfully",
+//         data: updatedSubCategory,
+//       });
+//     } else {
+//       const newSubCategory = new ChildExpenses({
+//         userId,
+//         expensesId,
+//         title,
+//         category,
+//         active: true,
+//       });
+
+//       await newSubCategory.save();
+
+//       return res.status(201).json({
+//         statusCode: "0",
+//         message: "SubCategory created successfully",
+//         data: newSubCategory,
+//       });
+//     }
+//   } catch (error) {
+//     return res.status(500).json({
+//       statusCode: "1",
+//       message: error.message,
+//     });
+//   }
+// };
+
 exports.upsert = async (req, res) => {
   //#swagger.tags = ['Child-Expenses']
   const { expensesId, category, userId } = req.body;
@@ -10,7 +88,7 @@ exports.upsert = async (req, res) => {
   try {
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(400).json({
+      return res.status(200).json({
         statusCode: "1",
         message: "User not found",
       });
@@ -18,7 +96,7 @@ exports.upsert = async (req, res) => {
 
     const expenses = await ExpensesMaster.findById(expensesId);
     if (!expenses) {
-      return res.status(400).json({
+      return res.status(200).json({
         statusCode: "1",
         message: "Expenses ID does not exist",
       });
@@ -28,7 +106,7 @@ exports.upsert = async (req, res) => {
       !Array.isArray(category) ||
       category.some((cat) => typeof cat !== "string")
     ) {
-      return res.status(400).json({
+      return res.status(200).json({
         statusCode: "1",
         message: "Category must be an array of strings",
       });
@@ -43,10 +121,13 @@ exports.upsert = async (req, res) => {
         { new: true }
       );
 
-      return res.status(200).json({
+      return res.status(201).json({
         statusCode: "0",
         message: "SubCategory updated successfully",
-        data: updatedSubCategory,
+        title: expenses.title,
+        data: {
+          ...updatedSubCategory._doc,
+        },
       });
     } else {
       const newSubCategory = new ChildExpenses({
@@ -61,7 +142,10 @@ exports.upsert = async (req, res) => {
       return res.status(201).json({
         statusCode: "0",
         message: "SubCategory created successfully",
-        data: newSubCategory,
+        title: expenses.title,
+        data: {
+          ...newSubCategory._doc,
+        },
       });
     }
   } catch (error) {
@@ -80,7 +164,7 @@ exports.getAll = async (req, res) => {
     const userVerify = await ChildExpenses.findOne({ userId });
 
     if (!userId) {
-      return res.status(400).json({
+      return res.status(200).json({
         statusCode: "1",
         message: "userId is required",
       });
