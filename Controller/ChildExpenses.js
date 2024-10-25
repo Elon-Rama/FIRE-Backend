@@ -99,6 +99,59 @@ exports.getAll = async (req, res) => {
   }
 };
 
+// exports.getAll = async (req, res) => {
+//   //#swagger.tags = ['Child-Expenses']
+//   try {
+//     const { userId } = req.query;
+
+//     if (!userId) {
+//       return res.status(400).json({
+//         statusCode: "1",
+//         message: "userId is required",
+//       });
+//     }
+
+//     // Fetch all active ChildExpenses for the user
+//     const activeChildExpenses = await ChildExpenses.find({
+//       userId,
+//       active: true,
+//     }).populate({
+//       path: 'expensesId',
+//       match: { active: true }, // Ensure only active parent expenses are populated
+//     });
+
+//     console.log("Raw fetched child expenses:", activeChildExpenses);
+
+//     // Filter out records where expensesId is null (non-active ExpensesMaster)
+//     const filteredExpenses = activeChildExpenses.filter(
+//       (expense) => expense.expensesId !== null
+//     );
+
+//     console.log("Filtered child expenses:", filteredExpenses);
+
+//     if (filteredExpenses.length === 0) {
+//       return res.status(404).json({
+//         statusCode: '1',
+//         message: "No active subcategories found for this user",
+//         data: [],
+//       });
+//     }
+
+//     res.status(200).json({
+//       statusCode: '0',
+//       message: "subCategories data retrieved successfully",
+//       data: filteredExpenses,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       statusCode: '1',
+//       message: "Failed to retrieve subcategories data",
+//       error: error.message,
+//     });
+//   }
+// };
+
+
 exports.delete = async (req, res) => {
   //#swagger.tags = ['Child-Expenses']
 
