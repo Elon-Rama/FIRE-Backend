@@ -5,7 +5,7 @@ const User = require("../Model/emailModel");
 
 exports.upsert = async (req, res) => {
   //#swagger.tags = ['Child-Expenses']
-  const { id, expensesId, category, userId } = req.body;
+  const { expensesId, category, userId } = req.body;
 
   try {
     const user = await User.findById(userId);
@@ -34,36 +34,33 @@ exports.upsert = async (req, res) => {
       });
     }
 
-    if (id) {
-      const updatedsubCategory = await ChildExpenses.findByIdAndUpdate(
-        id,
+    const existingSubCategory = await ChildExpenses.findOne({ expensesId });
+
+    if (existingSubCategory) {
+      const updatedSubCategory = await ChildExpenses.findByIdAndUpdate(
+        existingSubCategory._id,
         { $addToSet: { category: { $each: category } } },
         { new: true }
       );
 
-      if (!updatedsubCategory) {
-        return res.status(404).json({
-          statusCode: "1",
-          message: "SubCategory not found",
-        });
-      }
-
       return res.status(200).json({
         statusCode: "0",
         message: "SubCategory updated successfully",
-        data: updatedsubCategory,
+        data: updatedSubCategory,
       });
     } else {
-      const newsubCategory = await new ChildExpenses({
+      const newSubCategory = new ChildExpenses({
         userId,
         expensesId,
         category,
-      }).save();
+      });
+
+      await newSubCategory.save();
 
       return res.status(201).json({
         statusCode: "0",
-        data: newsubCategory,
-        message: "SubCategory added successfully",
+        message: "SubCategory created successfully",
+        data: newSubCategory,
       });
     }
   } catch (error) {
