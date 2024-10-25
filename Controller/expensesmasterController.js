@@ -164,7 +164,10 @@ exports.deleteById = async (req, res) => {
         { expensesId: req.params.expenses_id },
         { active: expenses.active }
       );
-
+      const updatedAllocations = await ExpensesAllocation.updateMany(
+        { expensesId: req.params.expenses_id },
+        { active: expenses.active }
+      );
       const message = expenses.active
         ? "Expense activated successfully"
         : "Expense inactivated successfully";
@@ -175,6 +178,7 @@ exports.deleteById = async (req, res) => {
         data: {
           parent: expenses,
           updatedChildren,
+          updatedAllocations,
         },
       });
     } else {

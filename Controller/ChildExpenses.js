@@ -354,7 +354,7 @@ exports.upsert = async (req, res) => {
   }
 };
 
-// Get all child expenses for a user
+
 exports.getAll = async (req, res) => {
   //#swagger.tags = ['Child-Expenses']
   try {
