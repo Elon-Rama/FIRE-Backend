@@ -111,9 +111,8 @@ exports.upsert = async (req, res) => {
   }
 };
 
-
 exports.getAll = async (req, res) => {
-  //#swagger.tags = ['Expenses Allocation']
+  //#swagger.tags = ['Child-Expenses']
   try {
     const { userId } = req.query;
 
@@ -123,22 +122,20 @@ exports.getAll = async (req, res) => {
         message: "userId is required",
       });
     }
-
-    const allocations = await ExpensesMaster.find({userId});
-    const activeallocations = allocations.filter((allocations) => allocations.active);
-    return res.status(200).json({
-      statuscode: "0",
-      message: "Expenses Allocations fetched successfully",
-      data: activeallocations,
+    const allocation = await ExpensesAllocation.find();
+    res.status(200).json({
+      statusCode: '0',
+      message: "ExpensesAllocation data retrived Successfully",
+      data: allocation,
     });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({
-      statuscode: "1",
-      message: "Internal Server Error",
+  } catch (error) {
+    res.status(500).json({
+      statusCode: '1',
+      message: "Failed to retrived ExpensesAllocation data",
     });
   }
 };
+
 
 exports.getById = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']

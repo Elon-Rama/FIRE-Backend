@@ -85,26 +85,16 @@ exports.getAll = async (req, res) => {
         message: "userId is required",
       });
     }
-
-    const categories = await ExpensesMaster.find({ userId });
-
-    const activeCategories = categories.filter((category) => category.active);
-    if (categories.length === 0) {
-      return res.status(404).json({
-        statusCode: "1",
-        message: "No subCategories found for this user",
-      });
-    }
-
+    const categories = await ChildExpenses.find();
     res.status(200).json({
-      statusCode: "0",
-      message: "SubCategories data retrieved successfully",
-      data: activeCategories,
+      statusCode: '0',
+      message: "subCategories data retrived Successfully",
+      data: categories,
     });
   } catch (error) {
     res.status(500).json({
-      statusCode: "1",
-      message: "Failed to retrieve subCategories data",
+      statusCode: '1',
+      message: "Failed to retrived subcategories data",
     });
   }
 };

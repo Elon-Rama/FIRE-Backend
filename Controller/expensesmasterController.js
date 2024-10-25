@@ -63,18 +63,19 @@ exports.getAll = async (req, res) => {
 
   try {
     const expenses = await ExpensesMaster.find({ userId });
-
+    
     if (expenses.length === 0) {
       return res.status(200).json({
         statusCode: "1",
         message: "No Expenses found for the provided userId",
       });
     }
-
+    console.log("Retrieved Categories:", expenses);
+    const activeCategories = expenses.filter((a) => a.active);
     res.status(200).json({
       statusCode: "0",
       message: "Expenses retrieved successfully",
-      data: expenses,
+      data: activeCategories,
     });
   } catch (error) {
     res.status(500).json({
@@ -121,21 +122,25 @@ exports.deleteById = async (req, res) => {
     if (expenses) {
       expenses.active = !expenses.active;
       await expenses.save();
-      console.log("exp", expenses);
-      if (!expenses.active) {
-        await ChildExpenses.findOne({ expensesId: req.params.expenses_id });
-        res.status(200).json({
-          statusCode: "0",
-          message: "Expense inactivated successfully",
-          data: expenses,
-        });
-      } else {
-        res.status(200).json({
-          statusCode: "0",
-          message: "Expense activated successfully",
-          data: expenses,
-        });
-      }
+
+      // Update related ChildExpenses and ExpensesAllocation entries
+      await ChildExpenses.updateMany(
+        { expensesId: req.params.expenses_id },
+        { $set: { active: expenses.active } }
+      );
+
+      await ExpensesAllocation.updateMany(
+        { "titles.expensesId": req.params.expenses_id },
+        { $set: { active: expenses.active } }
+      );
+
+      res.status(200).json({
+        statusCode: "0",
+        message: expenses.active
+          ? "Expense activated successfully"
+          : "Expense inactivated successfully",
+        data: expenses,
+      });
     } else {
       res.status(404).json({
         statusCode: "1",
