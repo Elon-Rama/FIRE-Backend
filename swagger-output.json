@@ -814,9 +814,6 @@
     },
     "/api/personal/create": {
       "post": {
-        "tags": [
-          "Expenses Allocation"
-        ],
         "description": "",
         "parameters": [
           {
@@ -828,7 +825,7 @@
                 "userId": {
                   "example": "any"
                 },
-                "titles": {
+                "Titles": {
                   "example": "any"
                 }
               }
@@ -836,103 +833,8 @@
           }
         ],
         "responses": {
-          "201": {
-            "description": "Created"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/personal/delete/{allocationId}": {
-      "delete": {
-        "tags": [
-          "Expenses Allocation"
-        ],
-        "description": "",
-        "parameters": [
-          {
-            "name": "allocationId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
           "200": {
             "description": "OK"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/personal/getAll": {
-      "get": {
-        "tags": [
-          "Expenses Allocation"
-        ],
-        "description": "",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "query",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/personal/{userId}/{month}/{year}": {
-      "get": {
-        "tags": [
-          "Expenses Allocation"
-        ],
-        "description": "",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "month",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "year",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "404": {
-            "description": "Not Found"
           },
           "500": {
             "description": "Internal Server Error"
@@ -1440,6 +1342,9 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "201": {
+            "description": "Created"
           },
           "400": {
             "description": "Bad Request"

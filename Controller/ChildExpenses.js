@@ -453,7 +453,7 @@ exports.search = async (req, res) => {
       });
     }
 
-    return res.status(200).json({
+    return res.status(201).json({
       message: "ChildExpenses retrieved successfully",
       data: searchResult.map((expense) => ({
         _id: expense._id,
