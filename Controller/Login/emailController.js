@@ -127,11 +127,8 @@ exports.verifyOTP = async (req, res) => {
     await user.save();
 
     const existingExpenses = await ExpensesMaster.findOne({ userId: user._id });
-    console.log("Existing Expenses:", existingExpenses);
 
     if (!existingExpenses) {
-      console.log("Creating default expenses for first-time user");
-
       const defaultExpenses = [
         { title: "Housing", active: true, userId: user._id },
         { title: "Entertainment", active: true, userId: user._id },
@@ -144,29 +141,45 @@ exports.verifyOTP = async (req, res) => {
         defaultExpenses
       );
 
-      const subcategoriesMapping = {
-        Housing: ["Rent", "Mortgage", "Utilities", "Phone", "Gas"],
-        Entertainment: ["Movies", "Music", "Events"],
-        Transportation: ["Car", "Fuel", "Public Transport"],
-        Loans: ["Personal Loan", "Car Loan", "Student Loan"],
-        Insurance: ["Health Insurance", "Car Insurance", "Life Insurance"],
-      };
+      const subcategoriesMapping = [
+        {
+          title: "Housing",
+          expensesId: createdMasterExpenses[0]._id,
+          category: ["Rent", "Mortgage", "Utilities", "Phone", "Gas"],
+          active: true,
+          userId: user._id,
+        },
+        {
+          title: "Entertainment",
+          expensesId: createdMasterExpenses[1]._id,
+          category: ["Movies", "Music", "Events"],
+          active: true,
+          userId: user._id,
+        },
+        {
+          title: "Transportation",
+          expensesId: createdMasterExpenses[2]._id,
+          category: ["Car", "Fuel", "Public Transport"],
+          active: true,
+          userId: user._id,
+        },
+        {
+          title: "Loans",
+          expensesId: createdMasterExpenses[3]._id,
+          category: ["Personal Loan", "Car Loan", "Student Loan"],
+          active: true,
+          userId: user._id,
+        },
+        {
+          title: "Insurance",
+          expensesId: createdMasterExpenses[4]._id,
+          category: ["Health Insurance", "Car Insurance", "Life Insurance"],
+          active: true,
+          userId: user._id,
+        },
+      ];
 
-      for (const masterExpense of createdMasterExpenses) {
-        if (masterExpense.active) {
-          const subcategories = subcategoriesMapping[masterExpense.title] || [];
-
-          const childExpense = {
-            amount: 0,
-            userId: user._id,
-            expensesId: masterExpense._id,
-            category: subcategories,
-            dateCreated: new Date(),
-          };
-
-          await ChildExpenses.create(childExpense);
-        }
-      }
+      await ChildExpenses.insertMany(subcategoriesMapping);
 
       const currentMonth = new Date().toLocaleString("default", {
         month: "long",

@@ -1,28 +1,4 @@
 
-// const mongoose = require('mongoose');
-
-// const ChildExpensesSchema = new mongoose.Schema({
-//   expensesId: {
-//     type: mongoose.Schema.Types.ObjectId,
-//     ref: 'ExpensesMaster',  
-//     required: true,
-//   },
-//   userId: {
-//     type: mongoose.Schema.Types.ObjectId,
-//     ref: 'User',
-//     required: true,
-// },
-//   category: {
-//     type: [String],  
-//     required: true,
-//   },
-// },
-// { timestamps: true });
-
-// const ChildExpenses = mongoose.model('ChildExpenses', ChildExpensesSchema);
-
-// module.exports = ChildExpenses;
-
 const mongoose = require('mongoose');
 
 const ChildExpensesSchema = new mongoose.Schema({
@@ -39,6 +15,10 @@ const ChildExpensesSchema = new mongoose.Schema({
   active: {
     type: Boolean,
     required: false,
+},
+title: {
+  type: String,
+  required: false
 },
   category: [{
     type: String,

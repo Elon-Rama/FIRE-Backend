@@ -63,19 +63,18 @@ exports.getAll = async (req, res) => {
 
   try {
     const expenses = await ExpensesMaster.find({ userId });
-    
+
     if (expenses.length === 0) {
       return res.status(200).json({
         statusCode: "1",
         message: "No Expenses found for the provided userId",
       });
     }
-    console.log("Retrieved Categories:", expenses);
-    const activeCategories = expenses.filter((a) => a.active);
+
     res.status(200).json({
       statusCode: "0",
       message: "Expenses retrieved successfully",
-      data: activeCategories,
+      data: expenses,
     });
   } catch (error) {
     res.status(500).json({
@@ -114,6 +113,44 @@ exports.getById = async (req, res) => {
   }
 };
 
+// exports.deleteById = async (req, res) => {
+//   //#swagger.tags = ['Master-Expenses']
+//   try {
+//     const expenses = await ExpensesMaster.findById(req.params.expenses_id);
+
+//     if (expenses) {
+//       expenses.active = !expenses.active;
+//       await expenses.save();
+
+//       if (!expenses.active) {
+//         await ExpensesMaster.findOne({ expensesId: req.params.expenses_id });
+//         res.status(200).json({
+//           statusCode: "0",
+//           message: "Expense inactivated successfully",
+//           data: expenses,
+//         });
+//       } else {
+//         res.status(200).json({
+//           statusCode: "0",
+//           message: "Expense activated successfully",
+//           data: expenses,
+//         });
+//       }
+//     } else {
+//       res.status(404).json({
+//         statusCode: "1",
+//         message: "No expense data found",
+//       });
+//     }
+//   } catch (error) {
+//     res.status(500).json({
+//       statusCode: "1",
+//       message: "Failed to update expense status",
+//       error: error.message,
+//     });
+//   }
+// };
+
 exports.deleteById = async (req, res) => {
   //#swagger.tags = ['Master-Expenses']
   try {
@@ -122,21 +159,24 @@ exports.deleteById = async (req, res) => {
     if (expenses) {
       expenses.active = !expenses.active;
       await expenses.save();
-      
-      if (!expenses.active) {
-        await ExpensesMaster.findOne({ expensesId: req.params.expenses_id });
-        res.status(200).json({
-          statusCode: "0",
-          message: "Expense inactivated successfully",
-          data: expenses,
-        }); 
-      } else {
-        res.status(200).json({
-          statusCode: "0",
-          message: "Expense activated successfully",
-          data: expenses,
-        });
-      }
+
+      const updatedChildren = await ChildExpenses.updateMany(
+        { expensesId: req.params.expenses_id },
+        { active: expenses.active }
+      );
+
+      const message = expenses.active
+        ? "Expense activated successfully"
+        : "Expense inactivated successfully";
+
+      res.status(200).json({
+        statusCode: "0",
+        message,
+        data: {
+          parent: expenses,
+          updatedChildren,
+        },
+      });
     } else {
       res.status(404).json({
         statusCode: "1",
