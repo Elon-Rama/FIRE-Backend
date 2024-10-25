@@ -12,8 +12,8 @@ const { verifyToken } = require("../../Middleware/authMiddleware");
 // router.get("/:userId/:month/:year", verifyToken, ExpensesAllocation.getById);
 
 router.post("/create", ExpensesAllocation.upsert);
-// router.delete("/delete/:allocationId", ExpensesAllocation.delete);
-// router.get("/getAll", ExpensesAllocation.getAll);
-// router.get("/:userId/:month/:year",  ExpensesAllocation.getById);
+router.delete("/delete/:allocationId", ExpensesAllocation.delete);
+router.get("/getAll", ExpensesAllocation.getAll);
+router.get("/:userId/:month/:year",  ExpensesAllocation.getById);
 
 module.exports = router;
