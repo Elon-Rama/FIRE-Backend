@@ -2,6 +2,7 @@ const ExpensesMaster = require("../Model/expensesModel");
 const ChildExpenses = require("../Model/ChildExpensesModel");
 const User = require("../Model/emailModel");
 const ExpensesAllocation = require("../Model/ExpensesAllocation");
+const RealityExpenses = require("../Model/Reality/ExpensesRealityModel");
 
 exports.upsert = async (req, res) => {
   //#swagger.tags = ['Master-Expenses']
@@ -157,17 +158,28 @@ exports.deleteById = async (req, res) => {
     const expenses = await ExpensesMaster.findById(req.params.expenses_id);
 
     if (expenses) {
+      // Toggle the active status of the parent expense
       expenses.active = !expenses.active;
       await expenses.save();
 
+      // Update active status in ChildExpenses
       const updatedChildren = await ChildExpenses.updateMany(
         { expensesId: req.params.expenses_id },
         { active: expenses.active }
       );
+
+      // Update active status in ExpensesAllocation
       const updatedAllocations = await ExpensesAllocation.updateMany(
         { "titles.title": expenses.title },
         { $set: { "titles.$.active": expenses.active } } 
       );
+
+      // Update active status in RealityExpenses
+      const updatedRealityExpenses = await RealityExpenses.updateMany(
+        { "titles.title": expenses.title, userId: expenses.userId },
+        { $set: { "titles.$.active": expenses.active } }
+      );
+
       const message = expenses.active
         ? "Expense activated successfully"
         : "Expense inactivated successfully";
@@ -179,6 +191,7 @@ exports.deleteById = async (req, res) => {
           parent: expenses,
           updatedChildren,
           updatedAllocations,
+          updatedRealityExpenses,
         },
       });
     } else {
@@ -195,3 +208,4 @@ exports.deleteById = async (req, res) => {
     });
   }
 };
+

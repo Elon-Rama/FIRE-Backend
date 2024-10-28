@@ -1,11 +1,25 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
+const subCategorySchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    amount: {
+      type: Number,
+      required: true,
+    },
+  },
+  { _id: false }
+);
 
-const expenseSchema = new mongoose.Schema({
-    userId: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'User', 
-        required: true 
+const realityExpensesSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     month: {
       type: String,
@@ -15,26 +29,32 @@ const expenseSchema = new mongoose.Schema({
       type: Number,
       required: true,
     },
-    date: { 
-        type: Date, 
-        default: Date.now 
+    titles: [
+      {
+        title: {
+          type: String,
+          required: true,
+        },
+        subCategory: [subCategorySchema],
+      },
+    ],
+    totalExpenses: {
+      type: Number,
+      default: 0,
     },
-    title: {
-        type: String,
-        required: true
+    active: {
+      type: Boolean,
+      default: true,
     },
-    category: {
-        type: [String], 
-        required: true
-    },
-    amount: {
-        type: Number,
-        required: true
-    },
-}, {
-    timestamps: true 
-});
+  },
+  {
+    timestamps: true,
+  }
+);
 
-const Expense = mongoose.model('Expense', expenseSchema);
+const RealityExpenses = mongoose.model(
+  "RealityExpenses",
+  realityExpensesSchema
+);
 
-module.exports = Expense;
+module.exports = RealityExpenses;

@@ -53,9 +53,6 @@
     },
     "/api/user/verify-otp": {
       "post": {
-        "tags": [
-          "Login-User"
-        ],
         "description": "",
         "parameters": [
           {
@@ -1515,7 +1512,7 @@
     "/api/realityexpenses/expenses": {
       "post": {
         "tags": [
-          "Reality-Expenses"
+          "RealityExpenses"
         ],
         "description": "",
         "parameters": [
@@ -1533,19 +1530,7 @@
                 "userId": {
                   "example": "any"
                 },
-                "month": {
-                  "example": "any"
-                },
-                "year": {
-                  "example": "any"
-                },
                 "title": {
-                  "example": "any"
-                },
-                "category": {
-                  "example": "any"
-                },
-                "amount": {
                   "example": "any"
                 }
               }
@@ -1553,14 +1538,14 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
-          },
           "201": {
             "description": "Created"
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
           },
           "500": {
             "description": "Internal Server Error"
@@ -1571,7 +1556,7 @@
     "/api/realityexpenses/getAllExpenses": {
       "get": {
         "tags": [
-          "Reality-Expenses"
+          "RealityExpenses"
         ],
         "description": "",
         "parameters": [
@@ -1579,125 +1564,10 @@
             "name": "authorization",
             "in": "header",
             "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/realityexpenses/getExpense/{id}": {
-      "get": {
-        "tags": [
-          "Reality-Expenses"
-        ],
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
           },
           {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/realityexpenses/updateExpense/{id}": {
-      "put": {
-        "tags": [
-          "Reality-Expenses"
-        ],
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "example": "any"
-                },
-                "category": {
-                  "example": "any"
-                },
-                "amount": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/realityexpenses/deleteExpense/{id}": {
-      "delete": {
-        "tags": [
-          "Reality-Expenses"
-        ],
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
+            "name": "userId",
+            "in": "query",
             "type": "string"
           }
         ],
