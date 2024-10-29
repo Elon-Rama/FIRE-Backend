@@ -27,7 +27,19 @@ const expensesAllocationSchema = new mongoose.Schema({
       amount: { 
         type: Number, 
         default: 0 
-      },   
+      },
+      category: [
+        {
+            title: {
+              type: String,
+              required: true
+            },
+            amount: {
+              type: Number,
+              default: 0
+            },
+        }
+      ]
     }
   ],
   totalExpenses: {

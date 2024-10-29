@@ -2,7 +2,6 @@ const ExpensesMaster = require("../Model/expensesModel");
 const ChildExpenses = require("../Model/ChildExpensesModel");
 const User = require("../Model/emailModel");
 const ExpensesAllocation = require("../Model/ExpensesAllocation");
-const RealityExpenses = require("../Model/Reality/ExpensesRealityModel");
 
 exports.upsert = async (req, res) => {
   //#swagger.tags = ['Master-Expenses']
@@ -44,6 +43,22 @@ exports.upsert = async (req, res) => {
         title,
         active: true,
       }).save();
+      
+    // Now update the ExpensesAllocation's titles array
+    await ExpensesAllocation.findOneAndUpdate(
+      { userId },
+      {
+        $push: {
+          titles: {
+            title: newTitle.title,
+            active: newTitle.active,
+            amount: 0,
+          },
+        },
+      },
+      { new: true, upsert: true }
+    )
+      
       res.status(201).json({
         statusCode: "0",
         message: "Categories Title created successfully",
@@ -158,25 +173,45 @@ exports.deleteById = async (req, res) => {
     const expenses = await ExpensesMaster.findById(req.params.expenses_id);
 
     if (expenses) {
-      // Toggle the active status of the parent expense
+      const previousStatus = expenses.active;
       expenses.active = !expenses.active;
       await expenses.save();
 
-      // Update active status in ChildExpenses
+      // Find the affected allocations before updating
+      const allocations = await ExpensesAllocation.find({
+        "titles.title": expenses.title,
+      });
+
+      // Loop through each affected allocation to update totalExpenses
+      for (const allocation of allocations) {
+        const titleEntry = allocation.titles.find(
+          (title) => title.title === expenses.title
+        );
+
+        if (titleEntry) {
+          // Adjust the totalExpenses based on the active status change
+          if (previousStatus && !expenses.active) {
+            // If we're inactivating the expense, subtract its amount from totalExpenses
+            allocation.totalExpenses -= titleEntry.amount;
+            titleEntry.amount = 0;
+            titleEntry.category.map(i => i.amount = 0)
+          }
+
+          // Ensure the totalExpenses doesn't go below zero
+          allocation.totalExpenses = Math.max(0, allocation.totalExpenses);
+
+          // Save the updated allocation
+          await allocation.save();
+        }
+      }
+
+      // Update the active status of child expenses and allocation titles
       const updatedChildren = await ChildExpenses.updateMany(
         { expensesId: req.params.expenses_id },
         { active: expenses.active }
       );
-
-      // Update active status in ExpensesAllocation
       const updatedAllocations = await ExpensesAllocation.updateMany(
         { "titles.title": expenses.title },
-        { $set: { "titles.$.active": expenses.active } } 
-      );
-
-      // Update active status in RealityExpenses
-      const updatedRealityExpenses = await RealityExpenses.updateMany(
-        { "titles.title": expenses.title, userId: expenses.userId },
         { $set: { "titles.$.active": expenses.active } }
       );
 
@@ -191,7 +226,6 @@ exports.deleteById = async (req, res) => {
           parent: expenses,
           updatedChildren,
           updatedAllocations,
-          updatedRealityExpenses,
         },
       });
     } else {
@@ -208,4 +242,3 @@ exports.deleteById = async (req, res) => {
     });
   }
 };
-

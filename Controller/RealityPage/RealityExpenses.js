@@ -1,136 +1,205 @@
-const RealityExpenses = require("../../Model/Reality/ExpensesRealityModel");
+// const express = require("express");
+// const router = express.Router();
+// const Expense = require("../../Model/Reality/ExpensesRealityModel");
+// const User = require("../../Model/emailModel");
+
+// exports.createExpense = async (req, res) => {
+//   //#swagger.tags = ['Reality-Expenses']
+//   const { userId, month, year, title, categories } = req.body; // Accept categories as an array
+
+//   try {
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     // Calculate the total amount by summing all category amounts
+//     const totalAmount = categories.reduce((acc, category) => acc + category.amount, 0);
+
+//     const newExpense = new Expense({
+//       userId: user._id,
+//       month,
+//       year,
+//       title,
+//       categories,
+//       totalAmount,
+//     });
+
+//     await newExpense.save();
+
+//     res.status(201).json({ message: "Expense created successfully", newExpense });
+//   } catch (error) {
+//     res.status(500).json({ message: "Error creating expense", error });
+//   }
+// };
+
+
+// exports.getAllExpenses = async (req, res) => {
+//   //#swagger.tags = ['Reality-Expenses']
+//   try {
+//     const expenses = await Expense.find();
+//     res.status(200).json(expenses);
+//   } catch (error) {
+//     res.status(500).json({ message: "Error fetching expenses", error });
+//   }
+// };
+
+// exports.getExpenseById = async (req, res) => {
+//   //#swagger.tags = ['Reality-Expenses']
+//   const { id } = req.params;
+
+//   try {
+//     const expense = await Expense.findById(id);
+//     if (!expense) {
+//       return res.status(404).json({ message: "Expense not found" });
+//     }
+//     res.status(200).json(expense);
+//   } catch (error) {
+//     res.status(500).json({ message: "Error fetching expense", error });
+//   }
+// };
+
+// exports.updateExpense = async (req, res) => {
+//   //#swagger.tags = ['Reality-Expenses']
+//   const { id } = req.params;
+//   const { title, category, amount } = req.body;
+
+//   try {
+//     const updatedExpense = await Expense.findByIdAndUpdate(
+//       id,
+//       { title, category, amount },
+//       { new: true }
+//     );
+
+//     if (!updatedExpense) {
+//       return res.status(404).json({ message: "Expense not found" });
+//     }
+
+//     res
+//       .status(200)
+//       .json({ message: "Expense updated successfully", updatedExpense });
+//   } catch (error) {
+//     res.status(500).json({ message: "Error updating expense", error });
+//   }
+// };
+
+// exports.deleteExpense = async (req, res) => {
+//   //#swagger.tags = ['Reality-Expenses']
+//   const { id } = req.params;
+
+//   try {
+//     const deletedExpense = await Expense.findByIdAndDelete(id);
+
+//     if (!deletedExpense) {
+//       return res.status(404).json({ message: "Expense not found" });
+//     }
+
+//     res.status(200).json({ message: "Expense deleted successfully" });
+//   } catch (error) {
+//     res.status(500).json({ message: "Error deleting expense", error });
+//   }
+// };
+
+const express = require("express");
+const router = express.Router();
+const Expense = require("../../Model/Reality/ExpensesRealityModel");
 const User = require("../../Model/emailModel");
-const ExpensesMaster = require("../../Model/ExpensesAllocation");
-const ChildExpenses = require("../../Model/ChildExpensesModel");
-const moment = require("moment");
 
-exports.upsert = async (req, res) => {
-   //#swagger.tags = ['RealityExpenses']
+exports.createExpense = async (req, res) => {
+  //#swagger.tags = ['Reality-Expenses']
+  const { userId, month, year, title, categories } = req.body; // Accept categories as an array
+
   try {
-    const { userId, title } = req.body;
-
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({
-        statusCode: "1",
-        message: "User not found",
-      });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    const currentMonth = moment().format("MMMM");
-    const currentYear = moment().format("YYYY");
+    // Calculate the total amount by summing all category amounts
+    const totalAmount = categories.reduce((acc, category) => acc + category.amount, 0);
 
-    let updatedTitles = title || [];
-    if (!updatedTitles.length) {
-      const expensesMaster = await ExpensesMaster.find({ userId });
-      console.log("Fetched ExpensesMaster:", expensesMaster);
-      updatedTitles = await Promise.all(
-        expensesMaster.map(async (expense) => {
-          const subCategories = await ChildExpenses.find({
-            parentExpenseId: expense._id,
-          });
-          return {
-            title: expense.title,
-            active: expense.active,
-            category: subCategories.map((sub) => ({
-              name: sub.name,
-              amount: 0,
-            })),
-          };
-        })
-      );
-      console.log("Updated Titles:", updatedTitles);
-    }
-
-    const totalExpenses = updatedTitles.reduce((total, item) => {
-      return (
-        total +
-        (item.category || []).reduce(
-          (subTotal, sub) => subTotal + (sub.amount || 0),
-          0
-        )
-      );
-    }, 0);
-
-    const updateData = {
+    const newExpense = new Expense({
       userId: user._id,
-      month: currentMonth,
-      year: currentYear,
-      title: updatedTitles,
-      totalExpenses,
-    };
-
-    const updatedRealityExpenses = await RealityExpenses.findOneAndUpdate(
-      { userId: user._id, month: currentMonth, year: currentYear },
-      { $set: updateData },
-      { new: true, upsert: true }
-    );
-
-    const response = {
-      statusCode: "0",
-      message: "Reality Expenses created/updated successfully",
-      userId: user._id,
-      id: updatedRealityExpenses._id,
-      Expenses: [
-        {
-          month: currentMonth,
-          year: currentYear,
-          titles: (updatedRealityExpenses.title || []).map((expense) => ({
-            title: expense.title,
-            active: expense.active,
-            subCategory: (expense.category || []).map((cat) => ({
-              name: cat.name,
-              amount: cat.amount || 0,
-            })),
-          })),
-          totalExpenses: updatedRealityExpenses.totalExpenses || 0,
-        },
-      ],
-    };
-
-    return res.status(201).json(response);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({
-      statusCode: "1",
-      message: "Internal Server Error",
+      month,
+      year,
+      title,
+      categories,
+      totalAmount,
     });
+
+    await newExpense.save();
+
+    res.status(201).json({ message: "Expense created successfully", newExpense });
+  } catch (error) {
+    res.status(500).json({ message: "Error creating expense", error });
   }
 };
 
-exports.getAll = async (req, res) => {
-   //#swagger.tags = ['RealityExpenses']
+exports.getAllExpenses = async (req, res) => {
+  //#swagger.tags = ['Reality-Expenses']
   try {
-    const { userId } = req.query;
+    const expenses = await Expense.find();
+    res.status(200).json(expenses);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching expenses", error });
+  }
+};
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({
-        statuscode: "1",
-        message: "User not found",
-      });
+exports.getExpenseById = async (req, res) => {
+  //#swagger.tags = ['Reality-Expenses']
+  const { id } = req.params;
+
+  try {
+    const expense = await Expense.findById(id);
+    if (!expense) {
+      return res.status(404).json({ message: "Expense not found" });
+    }
+    res.status(200).json(expense);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching expense", error });
+  }
+};
+
+exports.updateExpense = async (req, res) => {
+  //#swagger.tags = ['Reality-Expenses']
+  const { id } = req.params;
+  const { title, categories } = req.body; // Expect categories to be an array
+
+  try {
+    // Calculate the new total amount
+    const totalAmount = categories.reduce((acc, category) => acc + category.amount, 0);
+
+    const updatedExpense = await Expense.findByIdAndUpdate(
+      id,
+      { title, categories, totalAmount }, // Update total amount
+      { new: true }
+    );
+
+    if (!updatedExpense) {
+      return res.status(404).json({ message: "Expense not found" });
     }
 
-    const realityExpenses = await RealityExpenses.find({ userId });
+    res
+      .status(200)
+      .json({ message: "Expense updated successfully", updatedExpense });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating expense", error });
+  }
+};
 
-    if (!realityExpenses.length) {
-      return res.status(404).json({
-        statuscode: "1",
-        message: "No reality expenses found for this user",
-      });
+exports.deleteExpense = async (req, res) => {
+  //#swagger.tags = ['Reality-Expenses']
+  const { id } = req.params;
+
+  try {
+    const deletedExpense = await Expense.findByIdAndDelete(id);
+
+    if (!deletedExpense) {
+      return res.status(404).json({ message: "Expense not found" });
     }
 
-    return res.status(200).json({
-      statuscode: "0",
-      message: "Reality expenses retrieved successfully",
-      userId: user._id,
-      expenses: realityExpenses,
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({
-      statuscode: "1",
-      message: "Internal Server Error",
-    });
+    res.status(200).json({ message: "Expense deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting expense", error });
   }
 };

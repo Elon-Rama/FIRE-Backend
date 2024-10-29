@@ -9,7 +9,6 @@ require("dotenv").config();
 const ExpensesMaster = require("../../Model/expensesModel");
 const ExpensesAllocation = require("../../Model/ExpensesAllocation");
 const ChildExpenses = require("../../Model/ChildExpensesModel");
-const RealityExpenses = require("../../Model/Reality/ExpensesRealityModel");
 
 const cryptr = new Cryptr(process.env.JWT_SECRET);
 
@@ -94,162 +93,8 @@ exports.Signin = async (req, res) => {
   }
 };
 
-// exports.verifyOTP = async (req, res) => {
-//   //#swagger.tags = ['Login-User']
-//   const { email, otp } = req.body;
-
-//   if (!email || !otp) {
-//     return res.status(400).json({ error: "Email and OTP are required" });
-//   }
-
-//   try {
-//     const user = await User.findOne({ email });
-
-//     if (!user) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-
-//     if (user.loggedIn) {
-//       return res.status(400).json({ error: "User is already logged in" });
-//     }
-
-//     const decryptedOtp = cryptr.decrypt(user.otp);
-//     if (decryptedOtp !== otp) {
-//       return res.status(400).json({ error: "Invalid OTP" });
-//     }
-
-//     const sessionId = uuidv4();
-//     const sessionExpiresAt = Date.now() + 59 * 60 * 1000; // 59 minutes
-//     const token = generateToken(user.email, user._id);
-
-//     user.loggedIn = true;
-//     user.otp = null;
-//     user.token = token;
-//     user.sessionId = sessionId;
-//     user.sessionExpiresAt = sessionExpiresAt;
-//     await user.save();
-
-//     const existingExpenses = await ExpensesMaster.findOne({ userId: user._id });
-
-//     if (!existingExpenses) {
-//       const defaultExpenses = [
-//         { title: "Housing", active: true, userId: user._id },
-//         { title: "Entertainment", active: true, userId: user._id },
-//         { title: "Transportation", active: true, userId: user._id },
-//         { title: "Loans", active: true, userId: user._id },
-//         { title: "Insurance", active: true, userId: user._id },
-//       ];
-
-//       const createdMasterExpenses = await ExpensesMaster.insertMany(
-//         defaultExpenses
-//       );
-
-//       const subcategoriesMapping = [
-//         {
-//           title: "Housing",
-//           expensesId: createdMasterExpenses[0]._id,
-//           category: ["Rent", "Mortgage", "Utilities", "Phone", "Gas"],
-//           active: true,
-//           userId: user._id,
-//         },
-//         {
-//           title: "Entertainment",
-//           expensesId: createdMasterExpenses[1]._id,
-//           category: ["Movies", "Music", "Events"],
-//           active: true,
-//           userId: user._id,
-//         },
-//         {
-//           title: "Transportation",
-//           expensesId: createdMasterExpenses[2]._id,
-//           category: ["Car", "Fuel", "Public Transport"],
-//           active: true,
-//           userId: user._id,
-//         },
-//         {
-//           title: "Loans",
-//           expensesId: createdMasterExpenses[3]._id,
-//           category: ["Personal Loan", "Car Loan", "Student Loan"],
-//           active: true,
-//           userId: user._id,
-//         },
-//         {
-//           title: "Insurance",
-//           expensesId: createdMasterExpenses[4]._id,
-//           category: ["Health Insurance", "Car Insurance", "Life Insurance"],
-//           active: true,
-//           userId: user._id,
-//         },
-//       ];
-
-//       await ChildExpenses.insertMany(subcategoriesMapping);
-
-//       const currentMonth = new Date().toLocaleString("default", {
-//         month: "long",
-//       });
-//       const currentYear = new Date().getFullYear();
-
-//       const expensesMaster = await ExpensesMaster.find({ userId: user._id });
-
-//       if (expensesMaster.length) {
-//         const expensesTitles = expensesMaster.map((expense) => ({
-//           title: expense.title,
-//           active: expense.active,
-//           amount: 0,
-//         }));
-
-//         const newExpensesAllocation = new ExpensesAllocation({
-//           userId: user._id,
-//           month: currentMonth,
-//           year: currentYear,
-//           titles: expensesTitles,
-//         });
-
-//         await newExpensesAllocation.save();
-//       }
-//     }
-
-//     const existingRealityExpenses = await RealityExpenses.findOne({ userId: user._id });
-//     if (!existingRealityExpenses) {
-//       const realityExpensesTitles = [
-//         { title: "Housing", subCategory: [{ name: "Rent", amount: 0 }] },
-//         { title: "Entertainment", subCategory: [{ name: "Movies", amount: 0 }] },
-//         { title: "Transportation", subCategory: [{ name: "Fuel", amount: 0 }] },
-//         { title: "Loans", subCategory: [{ name: "Car Loan", amount: 0 }] },
-//         { title: "Insurance", subCategory: [{ name: "Health Insurance", amount: 0 }] },
-//       ];
-
-//       const newRealityExpenses = new RealityExpenses({
-//         userId: user._id,
-//         month: currentMonth,
-//         year: currentYear,
-//         titles: realityExpensesTitles,
-//         totalExpenses: 0,
-//         active: true,
-//       });
-
-//       await newRealityExpenses.save();
-//     }
-
-//     const userProfile = await Profile.findOne({ userId: user._id });
-
-//     res.status(201).json({
-//       success: true,
-//       message: "OTP is valid, user logged in, and default expenses created",
-//       token,
-//       sessionId,
-//       sessionExpiresAt,
-//       loggedIn: user.loggedIn,
-//       userId: user._id,
-//       userProfile: !!userProfile,
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: "Failed to verify OTP" });
-//   }
-// };
-
 exports.verifyOTP = async (req, res) => {
+  //#swagger.tags = ['Login-User']
   const { email, otp } = req.body;
 
   if (!email || !otp) {
@@ -287,14 +132,110 @@ exports.verifyOTP = async (req, res) => {
 
     if (!existingExpenses) {
       const defaultExpenses = [
-        { title: "Housing", active: true, userId: user._id },
-        { title: "Entertainment", active: true, userId: user._id },
-        { title: "Transportation", active: true, userId: user._id },
-        { title: "Loans", active: true, userId: user._id },
-        { title: "Insurance", active: true, userId: user._id },
+        {
+          title: "Housing",
+          active: true,
+          userId: user._id,
+          category: [
+            {
+              title: 'Rent',
+              amount: 0
+            },
+            {
+              title: 'Mortgage',
+              amount: 0
+            },
+            {
+              title: 'Utilities',
+              amount: 0
+            },
+            {
+              title: 'Phone',
+              amount: 0
+            },
+            {
+              title: 'Gas',
+              amount: 0
+            }
+          ]
+        },
+        { title: "Entertainment",
+          active: true,
+          userId: user._id,
+          category: [
+            {
+              title: 'Movies',
+              amount: 0
+            },
+            {
+              title: 'Music',
+              amount: 0
+            },
+            {
+              title: 'Events',
+              amount: 0
+            }
+          ]
+        },
+        { title: "Transportation",
+          active: true,
+          userId: user._id,
+          category: [
+            {
+              title: 'Car',
+              amount: 0
+            },
+            {
+              title: 'Fuel',
+              amount: 0
+            },
+            {
+              title: 'Public Transport',
+              amount: 0
+            }
+          ]
+        },
+        { title: "Loans",
+          active: true,
+          userId: user._id,
+          category: [
+            {
+              title: 'Personal Loan',
+              amount: 0
+            },
+            {
+              title: 'Car Loan',
+              amount: 0
+            },
+            {
+              title: 'Student Loan',
+              amount: 0
+            }
+          ]
+        },
+        { title: "Insurance",
+          active: true,
+          userId: user._id,
+          category: [
+            {
+              title: 'Health Insurance',
+              amount: 0
+            },
+            {
+              title: 'Car Insurance',
+              amount: 0
+            },
+            {
+              title: 'Life Insurance',
+              amount: 0
+            }
+          ]
+        },
       ];
 
-      const createdMasterExpenses = await ExpensesMaster.insertMany(defaultExpenses);
+      const createdMasterExpenses = await ExpensesMaster.insertMany(
+        defaultExpenses
+      );
 
       const subcategoriesMapping = [
         {
@@ -335,72 +276,32 @@ exports.verifyOTP = async (req, res) => {
       ];
 
       await ChildExpenses.insertMany(subcategoriesMapping);
-    }
 
-    // Define the current month and year
-    const currentMonth = new Date().toLocaleString("default", { month: "long" });
-    const currentYear = new Date().getFullYear();
-
-    const expensesMaster = await ExpensesMaster.find({ userId: user._id });
-
-    if (expensesMaster.length) {
-      const expensesTitles = expensesMaster.map((expense) => ({
-        title: expense.title,
-        active: expense.active,
-        amount: 0,
-      }));
-
-      const newExpensesAllocation = new ExpensesAllocation({
-        userId: user._id,
-        month: currentMonth,
-        year: currentYear,
-        titles: expensesTitles,
+      const currentMonth = new Date().toLocaleString("default", {
+        month: "long",
       });
+      const currentYear = new Date().getFullYear();
 
-      await newExpensesAllocation.save();
+      const expensesMaster = await ExpensesMaster.find({ userId: user._id });
+
+      if (expensesMaster.length) {
+        const expensesTitles = expensesMaster.map((expense) => ({
+          title: expense.title,
+          active: expense.active,
+          category: expense.category,
+          amount: 0,
+        }));
+
+        const newExpensesAllocation = new ExpensesAllocation({
+          userId: user._id,
+          month: currentMonth,
+          year: currentYear,
+          titles: expensesTitles,
+        });
+
+        await newExpensesAllocation.save();
+      }
     }
-
-    const existingRealityExpenses = await RealityExpenses.findOne({ userId: user._id });
-    if (!existingRealityExpenses) {
-      const realityExpensesTitles = [
-        {
-          title: "Housing",
-          subCategory: [{ name: "Rent", amount: 0 }],
-        },
-        {
-          title: "Entertainment",
-          subCategory: [
-            { name: "Movies", amount: 500 },  // Adjust default amounts as needed
-            { name: "Music", amount: 1000 },
-            { name: "Events", amount: 500 },
-          ],
-        },
-        {
-          title: "Transportation",
-          subCategory: [{ name: "Fuel", amount: 0 }],
-        },
-        {
-          title: "Loans",
-          subCategory: [{ name: "Personal Loan", amount: 0 }],
-        },
-        {
-          title: "Insurance",
-          subCategory: [{ name: "Health Insurance", amount: 0 }],
-        },
-      ];
-
-      const newRealityExpenses = new RealityExpenses({
-        userId: user._id,
-        month: currentMonth,
-        year: currentYear,
-        titles: realityExpensesTitles,
-        totalExpenses: 0,
-        active: true,
-      });
-
-      await newRealityExpenses.save();
-    }
-
     const userProfile = await Profile.findOne({ userId: user._id });
 
     res.status(201).json({
@@ -418,7 +319,6 @@ exports.verifyOTP = async (req, res) => {
     res.status(500).json({ error: "Failed to verify OTP" });
   }
 };
-
 
 exports.checkSession = async (req, res) => {
   //#swagger.tags = ['Login-User']

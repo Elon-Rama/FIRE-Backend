@@ -1,60 +1,45 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const subCategorySchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: true,
-    },
-    amount: {
-      type: Number,
-      required: true,
-    },
+const expenseSchema = new mongoose.Schema({
+  userId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User', 
+    required: true 
   },
-  { _id: false }
-);
-
-const realityExpensesSchema = new mongoose.Schema(
-  {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    month: {
-      type: String,
-      required: true,
-    },
-    year: {
-      type: Number,
-      required: true,
-    },
-    titles: [
-      {
-        title: {
-          type: String,
-          required: true,
-        },
-        subCategory: [subCategorySchema],
+  month: {
+    type: String,
+    required: true,
+  },
+  year: {
+    type: Number,
+    required: true,
+  },
+  date: { 
+    type: Date, 
+    default: Date.now 
+  },
+  title: {
+    type: String,
+    required: true
+  },
+  categories: [
+    {
+      name: {
+        type: String,
+        required: true
       },
-    ],
-    totalExpenses: {
-      type: Number,
-      default: 0,
-    },
-    active: {
-      type: Boolean,
-      default: true,
-    },
-  },
-  {
-    timestamps: true,
+      amount: {
+        type: Number,
+        required: true
+      }
+    }
+  ],
+  totalAmount: {
+    type: Number,
+    required: true
   }
-);
+}, { timestamps: true });
 
-const RealityExpenses = mongoose.model(
-  "RealityExpenses",
-  realityExpensesSchema
-);
+const Expense = mongoose.model('Expense', expenseSchema);
 
-module.exports = RealityExpenses;
+module.exports = Expense;
