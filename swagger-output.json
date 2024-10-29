@@ -814,6 +814,9 @@
     },
     "/api/personal/create": {
       "post": {
+        "tags": [
+          "Expenses Allocation"
+        ],
         "description": "",
         "parameters": [
           {
@@ -861,6 +864,9 @@
     },
     "/api/personal/copyPreviousMonth": {
       "post": {
+        "tags": [
+          "Expenses Allocation"
+        ],
         "description": "",
         "parameters": [
           {
@@ -908,6 +914,9 @@
     },
     "/api/personal/subcategorySaveUpdate": {
       "post": {
+        "tags": [
+          "Expenses Allocation"
+        ],
         "description": "",
         "parameters": [
           {
@@ -996,6 +1005,9 @@
     },
     "/api/personal/getAll": {
       "post": {
+        "tags": [
+          "Expenses Allocation"
+        ],
         "description": "",
         "parameters": [
           {
