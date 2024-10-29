@@ -1005,9 +1005,6 @@
     },
     "/api/personal/getAll": {
       "post": {
-        "tags": [
-          "Expenses Allocation"
-        ],
         "description": "",
         "parameters": [
           {

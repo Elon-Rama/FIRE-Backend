@@ -309,24 +309,28 @@ exports.postSubCategoryValues = async (req, res) => {
 };
 
 exports.getAll = async (req, res) => {
-  //#swagger.tags = ['Expenses Allocation']
   const { userId, month, year } = req.body;
   try {
+    // Try to find the requested month's data
     let allocation = await ExpensesAllocation.findOne({ userId, month, year });
-    console.log(userId, month, year);
+    console.log(userId, month, year)
     if (!allocation) {
+
+      // Fetch the previous month's data
       const previousAllocation = await ExpensesAllocation.findOne({
-        userId,
+        userId
       });
 
       if (previousAllocation) {
-        const modifiedTitles = previousAllocation.titles.map((title) => ({
+        // Modify the previous month's data by setting all `amount` values to `0`
+        const modifiedTitles = previousAllocation.titles.map(title => ({
           title: title.title,
           active: title.active,
           category: title.category,
           amount: 0,
         }));
 
+        // Create a new entry for the requested month with the modified titles
         allocation = new ExpensesAllocation({
           userId,
           month,
@@ -338,18 +342,18 @@ exports.getAll = async (req, res) => {
 
         return res.status(201).json({
           statusCode: "0",
-          message:
-            "Previous month's data copied with amount reset to 0 and saved for the new month",
+          message: "Previous month's data copied with amount reset to 0 and saved for the new month",
           data: [allocation],
         });
       } else {
         return res.status(200).json({
           statusCode: "1",
-          message: "No data found for the user",
+          message: "No data found for the user"
         });
       }
     }
 
+    // If the requested month's data exists, return it as is
     res.status(200).json({
       statusCode: "0",
       message: "Data fetched successfully",
@@ -362,6 +366,7 @@ exports.getAll = async (req, res) => {
     });
   }
 };
+
 
 exports.getById = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']
