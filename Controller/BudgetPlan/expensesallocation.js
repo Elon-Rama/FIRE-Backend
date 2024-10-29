@@ -309,6 +309,7 @@ exports.postSubCategoryValues = async (req, res) => {
 };
 
 exports.getAll = async (req, res) => {
+  //#swagger.tags = ['Expenses Allocation']
   const { userId, month, year } = req.body;
   try {
     // Try to find the requested month's data
