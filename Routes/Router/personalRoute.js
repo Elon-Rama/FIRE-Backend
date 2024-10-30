@@ -5,9 +5,9 @@ const { verifyToken } = require("../../Middleware/authMiddleware");
 
 router.post("/create",verifyToken, ExpensesAllocation.upsert);
 router.post("/copyPreviousMonth",verifyToken, ExpensesAllocation.copyPreviousMonthData);
-router.post("/subcategorySaveUpdate",verifyToken, ExpensesAllocation.postSubCategoryValues);
+router.post("/subcategorySaveUpdate", verifyToken, ExpensesAllocation.postSubCategoryValues);
 router.delete("/delete/:allocationId", verifyToken, ExpensesAllocation.delete);
-router.post("/getAll", ExpensesAllocation.getAll);
+router.post("/getAll", verifyToken,ExpensesAllocation.getAll);
 router.get("/:userId/:month/:year",  ExpensesAllocation.getById);
 
 // router.post("/create", ExpensesAllocation.upsert);

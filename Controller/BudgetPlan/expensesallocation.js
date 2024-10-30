@@ -474,15 +474,15 @@ exports.postSubCategoryValues = async (req, res) => {
 exports.getAll = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']
   const { userId, month, year } = req.body;
+
   try {
     // Try to find the requested month's data
     let allocation = await ExpensesAllocation.findOne({ userId, month, year });
     console.log(userId, month, year);
+
     if (!allocation) {
       // Fetch the previous month's data
-      const previousAllocation = await ExpensesAllocation.findOne({
-        userId,
-      });
+      const previousAllocation = await ExpensesAllocation.findOne({ userId });
 
       if (previousAllocation) {
         // Modify the previous month's data by setting all `amount` values to `0`
@@ -499,6 +499,7 @@ exports.getAll = async (req, res) => {
           month,
           year,
           titles: modifiedTitles,
+          totalExpenses: 0, // Initialize totalExpenses to 0
         });
 
         await allocation.save();
@@ -517,10 +518,20 @@ exports.getAll = async (req, res) => {
       }
     }
 
-    // Calculate total expenses from the titles array
-    const totalExpenses = allocation.titles.reduce((sum, title) => sum + title.amount, 0);
+    // Calculate total expenses from the titles and their categories
+    let totalExpenses = 0;
 
-    // If the requested month's data exists, return it as is
+    allocation.titles.forEach((title) => {
+      title.category.forEach((cat) => {
+        totalExpenses += cat.amount; // Sum all category amounts
+      });
+    });
+
+    // Update the totalExpenses field in the allocation object
+    allocation.totalExpenses = totalExpenses;
+    await allocation.save(); // Save the updated allocation document
+
+    // If the requested month's data exists, return it
     res.status(200).json({
       statusCode: "0",
       message: "Data fetched successfully",
@@ -534,6 +545,7 @@ exports.getAll = async (req, res) => {
     });
   }
 };
+
 
 exports.getById = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']
