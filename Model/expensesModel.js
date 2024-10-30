@@ -14,6 +14,18 @@ const ExpensesMasterSchema = new mongoose.Schema({
         type: Boolean,
         required: false,
     },
+    category: [
+        {
+            title: {
+              type: String,
+              required: true
+            },
+            amount: {
+              type: Number,
+              default: 0
+            },
+        }
+      ]
 }, { timestamps: true });
 
 module.exports = mongoose.model('ExpensesMaster', ExpensesMasterSchema);
