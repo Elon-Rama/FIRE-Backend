@@ -164,30 +164,73 @@ exports.getExpenseById = async (req, res) => {
   }
 };
 
+// exports.updateExpense = async (req, res) => {
+//   //#swagger.tags = ['Reality-Expenses']
+//   const { id } = req.params;
+//   const { title, categories } = req.body;
+
+//   try {
+//     const totalAmount = categories.reduce(
+//       (acc, category) => acc + category.amount,
+//       0
+//     );
+
+//     const updatedExpense = await Expense.findByIdAndUpdate(
+//       id,
+//       { title, categories, totalAmount },
+//       { new: true }
+//     );
+
+//     if (!updatedExpense) {
+//       return res.status(404).json({ message: "Expense not found" });
+//     }
+
+//     res
+//       .status(200)
+//       .json({ message: "Expense updated successfully", updatedExpense });
+//   } catch (error) {
+//     res.status(500).json({ message: "Error updating expense", error });
+//   }
+// };
 exports.updateExpense = async (req, res) => {
   //#swagger.tags = ['Reality-Expenses']
   const { id } = req.params;
   const { title, categories } = req.body;
 
   try {
-    const totalAmount = categories.reduce(
+    // Fetch the existing expense
+    const existingExpense = await Expense.findById(id);
+    if (!existingExpense) {
+      return res.status(404).json({ message: "Expense not found" });
+    }
+
+    // Create a new categories array with updated amounts
+    const updatedCategories = existingExpense.categories.map(existingCategory => {
+      const newCategory = categories.find(cat => cat.title === existingCategory.title);
+      if (newCategory) {
+        // Add new amount to the existing amount
+        return {
+          ...existingCategory,
+          amount: existingCategory.amount + newCategory.amount,
+        };
+      }
+      return existingCategory; // Return existing category if not found in new categories
+    });
+
+    // Calculate total amount after updating the categories
+    const totalAmount = updatedCategories.reduce(
       (acc, category) => acc + category.amount,
       0
     );
 
+    // Update the expense with the new title, updated categories, and total amount
     const updatedExpense = await Expense.findByIdAndUpdate(
       id,
-      { title, categories, totalAmount },
+      { title, categories: updatedCategories, totalAmount },
       { new: true }
     );
 
-    if (!updatedExpense) {
-      return res.status(404).json({ message: "Expense not found" });
-    }
-
-    res
-      .status(200)
-      .json({ message: "Expense updated successfully", updatedExpense });
+    res.status(200).json({ message: "Expense updated successfully", updatedExpense });
   } catch (error) {
     res.status(500).json({ message: "Error updating expense", error });
   }
