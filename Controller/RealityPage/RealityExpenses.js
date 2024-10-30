@@ -107,7 +107,7 @@ const User = require("../../Model/emailModel");
 
 exports.createExpense = async (req, res) => {
   //#swagger.tags = ['Reality-Expenses']
-  const { userId, month, year, title, categories } = req.body; // Accept categories as an array
+  const { userId, month, year, title, categories } = req.body;
 
   try {
     const user = await User.findById(userId);
@@ -115,8 +115,10 @@ exports.createExpense = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Calculate the total amount by summing all category amounts
-    const totalAmount = categories.reduce((acc, category) => acc + category.amount, 0);
+    const totalAmount = categories.reduce(
+      (acc, category) => acc + category.amount,
+      0
+    );
 
     const newExpense = new Expense({
       userId: user._id,
@@ -129,7 +131,9 @@ exports.createExpense = async (req, res) => {
 
     await newExpense.save();
 
-    res.status(201).json({ message: "Expense created successfully", newExpense });
+    res
+      .status(201)
+      .json({ message: "Expense created successfully", newExpense });
   } catch (error) {
     res.status(500).json({ message: "Error creating expense", error });
   }
@@ -163,15 +167,17 @@ exports.getExpenseById = async (req, res) => {
 exports.updateExpense = async (req, res) => {
   //#swagger.tags = ['Reality-Expenses']
   const { id } = req.params;
-  const { title, categories } = req.body; // Expect categories to be an array
+  const { title, categories } = req.body;
 
   try {
-    // Calculate the new total amount
-    const totalAmount = categories.reduce((acc, category) => acc + category.amount, 0);
+    const totalAmount = categories.reduce(
+      (acc, category) => acc + category.amount,
+      0
+    );
 
     const updatedExpense = await Expense.findByIdAndUpdate(
       id,
-      { title, categories, totalAmount }, // Update total amount
+      { title, categories, totalAmount },
       { new: true }
     );
 
