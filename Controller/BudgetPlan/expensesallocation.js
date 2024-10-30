@@ -411,23 +411,82 @@ exports.postSubCategoryValues = async (req, res) => {
 };
 
 
+// exports.getAll = async (req, res) => {
+//    //#swagger.tags = ['Expenses Allocation']
+//   const { userId, month, year } = req.body;
+//   try {
+//     // Try to find the requested month's data
+//     let allocation = await ExpensesAllocation.findOne({ userId, month, year });
+//     console.log(userId, month, year)
+//     if (!allocation) {
+
+//       // Fetch the previous month's data
+//       const previousAllocation = await ExpensesAllocation.findOne({
+//         userId
+//       });
+
+//       if (previousAllocation) {
+//         // Modify the previous month's data by setting all `amount` values to `0`
+//         const modifiedTitles = previousAllocation.titles.map(title => ({
+//           title: title.title,
+//           active: title.active,
+//           category: title.category,
+//           amount: 0,
+//         }));
+
+//         // Create a new entry for the requested month with the modified titles
+//         allocation = new ExpensesAllocation({
+//           userId,
+//           month,
+//           year,
+//           titles: modifiedTitles,
+//         });
+
+//         await allocation.save();
+
+//         return res.status(201).json({
+//           statusCode: "0",
+//           message: "Previous month's data copied with amount reset to 0 and saved for the new month",
+//           data: [allocation],
+//         });
+//       } else {
+//         return res.status(200).json({
+//           statusCode: "1",
+//           message: "No data found for the user"
+//         });
+//       }
+//     }
+
+//     // If the requested month's data exists, return it as is
+//     res.status(200).json({
+//       statusCode: "0",
+//       message: "Data fetched successfully",
+//       data: [allocation],
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       statusCode: "1",
+//       message: error.message,
+//     });
+//   }
+// };
+
 exports.getAll = async (req, res) => {
-   //#swagger.tags = ['Expenses Allocation']
+  //#swagger.tags = ['Expenses Allocation']
   const { userId, month, year } = req.body;
   try {
     // Try to find the requested month's data
     let allocation = await ExpensesAllocation.findOne({ userId, month, year });
-    console.log(userId, month, year)
+    console.log(userId, month, year);
     if (!allocation) {
-
       // Fetch the previous month's data
       const previousAllocation = await ExpensesAllocation.findOne({
-        userId
+        userId,
       });
 
       if (previousAllocation) {
         // Modify the previous month's data by setting all `amount` values to `0`
-        const modifiedTitles = previousAllocation.titles.map(title => ({
+        const modifiedTitles = previousAllocation.titles.map((title) => ({
           title: title.title,
           active: title.active,
           category: title.category,
@@ -448,20 +507,25 @@ exports.getAll = async (req, res) => {
           statusCode: "0",
           message: "Previous month's data copied with amount reset to 0 and saved for the new month",
           data: [allocation],
+          totalExpenses: 0, // Total expenses is 0 since all amounts are reset
         });
       } else {
         return res.status(200).json({
           statusCode: "1",
-          message: "No data found for the user"
+          message: "No data found for the user",
         });
       }
     }
+
+    // Calculate total expenses from the titles array
+    const totalExpenses = allocation.titles.reduce((sum, title) => sum + title.amount, 0);
 
     // If the requested month's data exists, return it as is
     res.status(200).json({
       statusCode: "0",
       message: "Data fetched successfully",
       data: [allocation],
+      totalExpenses, // Include the calculated totalExpenses in the response
     });
   } catch (error) {
     res.status(500).json({
