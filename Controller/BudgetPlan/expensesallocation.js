@@ -195,6 +195,132 @@ exports.copyPreviousMonthData = async (req, res) => {
   }
 };
 
+// exports.postSubCategoryValues = async (req, res) => {
+//   //#swagger.tags = ['Expenses Allocation']
+//   try {
+//     const { userId, month, year, selectedMaster, selectedCategory, amount } =
+//       req.body;
+
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({
+//         statuscode: "1",
+//         message: "User not found",
+//       });
+//     }
+
+//     const expenses = await ExpensesAllocation.findOne({ userId, month, year });
+//     if (!expenses) {
+//       return res.status(404).json({
+//         statuscode: "1",
+//         message: "Expenses record not found for the specified month and year",
+//       });
+//     }
+
+//     const master = expenses.titles.find(
+//       (title) => title.title === selectedMaster
+//     );
+//     if (!master) {
+//       const newMaster = new ExpensesMaster({
+//         active: true,
+//         category: [
+//           {
+//             title: selectedCategory,
+//             amount: amount,
+//           },
+//         ],
+//         title: selectedMaster,
+//         userId,
+//       });
+//       await newMaster.save();
+//       expenses.titles.push({
+//         title: selectedMaster,
+//         active: true,
+//         category: [
+//           {
+//             title: selectedCategory,
+//             amount: amount,
+//           },
+//         ],
+//       });
+//       await expenses.save();
+//       let child = await ChildExpenses.findOne({ userId, title: "Others" });
+//       if (child) {
+//         child.category.push(selectedCategory);
+//       } else {
+//         child = new ChildExpenses({
+//           active: true,
+//           category: [selectedCategory],
+//           title: selectedMaster,
+//           expensesId: newMaster.id,
+//           userId,
+//         });
+//       }
+//       await child.save();
+
+//       const totalAmount = expenses.titles.reduce((total, title) => {
+//         return (
+//           total +
+//           title.category.reduce((catTotal, cat) => catTotal + cat.amount, 0)
+//         );
+//       }, 0);
+
+//       return res.status(201).json({
+//         statuscode: "0",
+//         message: "New Master Added successfully",
+//         totalAmount,
+//       });
+//     }
+
+//     const category = master.category.find(
+//       (cat) => cat.title === selectedCategory
+//     );
+
+//     if (category) {
+//       category.amount += amount;
+//     } else {
+//       master.category.push({
+//         title: selectedCategory,
+//         amount,
+//       });
+//     }
+
+//     await expenses.save();
+
+//     let child = await ChildExpenses.findOne({ userId, title: "Others" });
+//     if (child) {
+//       child.category.push(selectedCategory);
+//     } else {
+//       child = new ChildExpenses({
+//         active: true,
+//         category: [selectedCategory],
+//         title: selectedMaster,
+//         expensesId: master.id,
+//         userId,
+//       });
+//     }
+//     await child.save();
+
+//     const totalAmount = expenses.titles.reduce((total, title) => {
+//       return (
+//         total +
+//         title.category.reduce((catTotal, cat) => catTotal + cat.amount, 0)
+//       );
+//     }, 0);
+
+//     return res.status(201).json({
+//       statuscode: "0",
+//       message: "Amount updated successfully",
+//       totalAmount,
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({
+//       statuscode: "1",
+//       message: "Internal Server Error",
+//     });
+//   }
+// };
 exports.postSubCategoryValues = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']
   try {
@@ -220,104 +346,44 @@ exports.postSubCategoryValues = async (req, res) => {
     const master = expenses.titles.find(
       (title) => title.title === selectedMaster
     );
+
     if (!master) {
-      // Create new master if it doesn't exist
-      const newMaster = new ExpensesMaster({
-        active: true,
-        category: [
-          {
-            title: selectedCategory,
-            amount: amount,
-          },
-        ],
-        title: selectedMaster,
-        userId,
-      });
-      await newMaster.save();
-      expenses.titles.push({
+      const newMaster = {
         title: selectedMaster,
         active: true,
-        category: [
-          {
-            title: selectedCategory,
-            amount: amount,
-          },
-        ],
-      });
+        amount: amount,
+        category: [{ title: selectedCategory, amount }],
+      };
+      expenses.titles.push(newMaster);
       await expenses.save();
-      let child = await ChildExpenses.findOne({ userId, title: "Others" });
-      if (child) {
-        child.category.push(selectedCategory);
-      } else {
-        child = new ChildExpenses({
-          active: true,
-          category: [selectedCategory],
-          title: selectedMaster,
-          expensesId: newMaster.id,
-          userId,
-        });
-      }
-      await child.save();
-
-      // Calculate the total amount after adding the new master and category
-      const totalAmount = expenses.titles.reduce((total, title) => {
-        return (
-          total +
-          title.category.reduce((catTotal, cat) => catTotal + cat.amount, 0)
-        );
-      }, 0);
-
       return res.status(201).json({
         statuscode: "0",
         message: "New Master Added successfully",
-        totalAmount,
+        totalAmount: amount,
       });
     }
 
-    // Check if the category exists
     const category = master.category.find(
       (cat) => cat.title === selectedCategory
     );
 
     if (category) {
-      // If the category exists, add the new amount to the existing amount
       category.amount += amount;
     } else {
-      // If the category does not exist, add it
-      master.category.push({
-        title: selectedCategory,
-        amount,
-      });
+      master.category.push({ title: selectedCategory, amount });
     }
 
-    await expenses.save(); // Save the updated expenses record
+    master.amount = master.category.reduce(
+      (total, cat) => total + cat.amount,
+      0
+    );
 
-    let child = await ChildExpenses.findOne({ userId, title: "Others" });
-    if (child) {
-      child.category.push(selectedCategory);
-    } else {
-      child = new ChildExpenses({
-        active: true,
-        category: [selectedCategory],
-        title: selectedMaster,
-        expensesId: master.id, // This should be the right reference
-        userId,
-      });
-    }
-    await child.save();
+    await expenses.save();
 
-    // Calculate the total amount of all categories after updates
-    const totalAmount = expenses.titles.reduce((total, title) => {
-      return (
-        total +
-        title.category.reduce((catTotal, cat) => catTotal + cat.amount, 0)
-      );
-    }, 0);
-
-    return res.status(201).json({
+    return res.status(200).json({
       statuscode: "0",
       message: "Amount updated successfully",
-      totalAmount,
+      totalAmount: master.amount,
     });
   } catch (err) {
     console.error(err);
@@ -327,82 +393,6 @@ exports.postSubCategoryValues = async (req, res) => {
     });
   }
 };
-
-// exports.getAll = async (req, res) => {
-//   //#swagger.tags = ['Expenses Allocation']
-//   const { userId, month, year } = req.body;
-
-//   try {
-//     let allocation = await ExpensesAllocation.findOne({ userId, month, year });
-//     console.log(userId, month, year);
-
-//     if (!allocation) {
-//       const previousAllocation = await ExpensesAllocation.findOne({ userId });
-
-//       if (previousAllocation) {
-//         const modifiedTitles = previousAllocation.titles.map((title) => ({
-//           title: title.title,
-//           active: title.active,
-//           category: title.category,
-//           // AllocationTotal: 0,
-//           // RealityTotal: 0,
-//           amount: 0,  // Reset amount to 0 for the new month
-//         }));
-
-//         allocation = new ExpensesAllocation({
-//           userId,
-//           month,
-//           year,
-//           titles: modifiedTitles,
-//           AllocationTotal: 0,
-//           RealityTotal: 0,
-//         });
-
-//         await allocation.save();
-//         console.log("allocation")
-//         return res.status(201).json({
-//           statusCode: "0",
-//           message:
-//             "Previous month's data copied with amount reset to 0 and saved for the new month",
-//           data: allocation,
-//           AllocationTotal,
-//           RealityTotal,
-//         });
-//       } else {
-//         return res.status(200).json({
-//           statusCode: "1",
-//           message: "No data found for the user",
-//         });
-//       }
-//     }
-
-//     // Calculate AllocationTotal: sum of title amounts
-//     let AllocationTotal = allocation.titles.reduce((total, title) => total + title.amount, 0);
-
-//     // Calculate RealityTotal: sum of all category amounts within each title
-//     let RealityTotal = allocation.titles.reduce((total, title) => {
-//       return total + title.category.reduce((catTotal, cat) => catTotal + cat.amount, 0);
-//     }, 0);
-
-//     // Update the totals in the allocation object
-//     allocation.AllocationTotal = AllocationTotal;
-//     allocation.RealityTotal = RealityTotal;
-//     await allocation.save();
-
-//     res.status(200).json({
-//       statusCode: "0",
-//       message: "Data fetched successfully",
-//       data: allocation,
-//       AllocationTotal,
-//       RealityTotal,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       statusCode: "1",
-//       message: error.message,
-//     });
-//   }
-// };
 
 exports.getAll = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']
@@ -414,6 +404,7 @@ exports.getAll = async (req, res) => {
 
     if (!allocation) {
       const previousAllocation = await ExpensesAllocation.findOne({ userId });
+
       if (previousAllocation) {
         const modifiedTitles = previousAllocation.titles.map((title) => ({
           title: title.title,
