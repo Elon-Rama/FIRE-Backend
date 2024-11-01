@@ -912,7 +912,7 @@
         }
       }
     },
-    "/api/personal/subcategorySaveUpdate": {
+    "/api/personal/subcategorysaveupdate": {
       "post": {
         "tags": [
           "Expenses Allocation"

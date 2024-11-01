@@ -50,12 +50,13 @@ exports.upsert = async (req, res) => {
           amount: title.amount,
           category: title.category,
           active: true,
+          totalExpenses,
         });
       }
     });
     const finalTitles = Array.from(existingTitlesMap.values());
 
-    const totalExpenses = finalTitles.reduce(
+    const AllocationTotal = finalTitles.reduce(
       (total, title) => total + title.amount,
       0
     );
@@ -65,7 +66,7 @@ exports.upsert = async (req, res) => {
       month,
       year,
       titles: finalTitles,
-      totalExpenses,
+      AllocationTotal,
       active: true,
     };
 
@@ -82,7 +83,7 @@ exports.upsert = async (req, res) => {
         : "Expenses Allocation created successfully",
       userId: user._id,
       expensesAllocationId: updateAllocation._id,
-      totalExpenses,
+      AllocationTotal,
       Expenses: finalTitles.map((title) => ({
         title: title.title,
         amount: title.amount,
@@ -422,6 +423,74 @@ exports.postSubCategoryValues = async (req, res) => {
   }
 };
 
+// exports.getAll = async (req, res) => {
+//   //#swagger.tags = ['Expenses Allocation']
+//   const { userId, month, year } = req.body;
+
+//   try {
+//     let allocation = await ExpensesAllocation.findOne({ userId, month, year });
+//     console.log(userId, month, year);
+
+//     if (!allocation) {
+//       const previousAllocation = await ExpensesAllocation.findOne({ userId });
+
+//       if (previousAllocation) {
+//         const modifiedTitles = previousAllocation.titles.map((title) => ({
+//           title: title.title,
+//           active: title.active,
+//           category: title.category,
+//           amount: 0,
+//         }));
+
+//         allocation = new ExpensesAllocation({
+//           userId,
+//           month,
+//           year,
+//           titles: modifiedTitles,
+//           RealitytotalExpenses: 0,
+//         });
+
+//         await allocation.save();
+
+//         return res.status(201).json({
+//           statusCode: "0",
+//           message:
+//             "Previous month's data copied with amount reset to 0 and saved for the new month",
+//           data: [allocation],
+//           AllocationTotal: 0,
+//         });
+//       } else {
+//         return res.status(200).json({
+//           statusCode: "1",
+//           message: "No data found for the user",
+//         });
+//       }
+//     }
+
+//     let totalExpenses = 0;
+
+//     allocation.titles.forEach((title) => {
+//       title.category.forEach((cat) => {
+//         totalExpenses += cat.amount;
+//       });
+//     });
+
+//     allocation.totalExpenses = totalExpenses;
+//     await allocation.save();
+
+//     res.status(200).json({
+//       statusCode: "0",
+//       message: "Data fetched successfully",
+//       data: [allocation],
+//       totalExpenses,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       statusCode: "1",
+//       message: error.message,
+//     });
+//   }
+// };
 exports.getAll = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']
   const { userId, month, year } = req.body;
@@ -438,7 +507,7 @@ exports.getAll = async (req, res) => {
           title: title.title,
           active: title.active,
           category: title.category,
-          amount: 0,
+          amount: 0,  // Reset amount to 0 for the new month
         }));
 
         allocation = new ExpensesAllocation({
@@ -446,7 +515,8 @@ exports.getAll = async (req, res) => {
           month,
           year,
           titles: modifiedTitles,
-          totalExpenses: 0,
+          AllocationTotal: 0,
+          RealityTotal: 0,
         });
 
         await allocation.save();
@@ -456,7 +526,8 @@ exports.getAll = async (req, res) => {
           message:
             "Previous month's data copied with amount reset to 0 and saved for the new month",
           data: [allocation],
-          totalExpenses: 0,
+          AllocationTotal: 0,
+          RealityTotal: 0,
         });
       } else {
         return res.status(200).json({
@@ -466,22 +537,25 @@ exports.getAll = async (req, res) => {
       }
     }
 
-    let totalExpenses = 0;
+    // Calculate AllocationTotal: sum of title amounts
+    let AllocationTotal = allocation.titles.reduce((total, title) => total + title.amount, 0);
 
-    allocation.titles.forEach((title) => {
-      title.category.forEach((cat) => {
-        totalExpenses += cat.amount;
-      });
-    });
+    // Calculate RealityTotal: sum of all category amounts within each title
+    let RealityTotal = allocation.titles.reduce((total, title) => {
+      return total + title.category.reduce((catTotal, cat) => catTotal + cat.amount, 0);
+    }, 0);
 
-    allocation.totalExpenses = totalExpenses;
+    // Update the totals in the allocation object
+    allocation.AllocationTotal = AllocationTotal;
+    allocation.RealityTotal = RealityTotal;
     await allocation.save();
 
     res.status(200).json({
       statusCode: "0",
       message: "Data fetched successfully",
       data: [allocation],
-      totalExpenses,
+      AllocationTotal,
+      RealityTotal,
     });
   } catch (error) {
     res.status(500).json({
@@ -490,6 +564,7 @@ exports.getAll = async (req, res) => {
     });
   }
 };
+
 
 exports.getById = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']
