@@ -1,4 +1,4 @@
-const ExpensesMaster = require("../Model/expensesModel");
+const ExpensesMaster = require("../Model/masterExpensesModel");
 const ChildExpenses = require("../Model/ChildExpensesModel");
 const User = require("../Model/emailModel");
 const ExpensesAllocation = require("../Model/ExpensesAllocation");

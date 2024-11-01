@@ -814,9 +814,6 @@
     },
     "/api/personal/create": {
       "post": {
-        "tags": [
-          "Expenses Allocation"
-        ],
         "description": "",
         "parameters": [
           {
@@ -914,9 +911,6 @@
     },
     "/api/personal/subcategorysaveupdate": {
       "post": {
-        "tags": [
-          "Expenses Allocation"
-        ],
         "description": "",
         "parameters": [
           {

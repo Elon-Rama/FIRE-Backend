@@ -1,6 +1,6 @@
 
 const ChildExpenses = require("../Model/ChildExpensesModel");
-const ExpensesMaster = require("../Model/expensesModel");
+const ExpensesMaster = require("../Model/masterExpensesModel");
 const User = require("../Model/emailModel");
 const ExpensesAllocation = require("../Model/ExpensesAllocation");
 

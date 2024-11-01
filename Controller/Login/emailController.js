@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const { v4: uuidv4 } = require("uuid");
 require("dotenv").config();
-const ExpensesMaster = require("../../Model/expensesModel");
+const ExpensesMaster = require("../../Model/masterExpensesModel");
 const ExpensesAllocation = require("../../Model/ExpensesAllocation");
 const ChildExpenses = require("../../Model/ChildExpensesModel");
 
