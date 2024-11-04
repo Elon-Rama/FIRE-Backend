@@ -4,100 +4,6 @@ const ExpensesAllocation = require("../../Model/ExpensesAllocation");
 const ChildExpenses = require("../../Model/ChildExpensesModel");
 const moment = require('moment'); 
 
-// exports.upsert = async (req, res) => {
-//   try {
-//     const { userId, titles, month, year } = req.body;
-//     const user = await User.findById(userId);
-//     if (!user) {
-//       return res.status(404).json({
-//         statuscode: "1",
-//         message: "User not found",
-//       });
-//     }
-//     const existingAllocation = await ExpensesAllocation.findOne({ userId, month, year });
-//     let updatedTitles = titles || [];
-//     if (!updatedTitles.length) {
-//       const expensesMaster = await ExpensesMaster.find({ userId });
-//       updatedTitles = expensesMaster
-//         .filter((expense) => expense.active)
-//         .map((expense) => ({
-//           title: expense.title,
-//           amount: 0,
-//           active: expense.active,
-//           category: expense.category
-//         }));
-//       if (updatedTitles.length === 0) {
-//         return res.status(404).json({
-//           statuscode: "1",
-//           message: "No active expenses found for this user",
-//         });
-//       }
-//     }
-//     const existingTitlesMap = existingAllocation
-//       ? new Map(existingAllocation.titles.map((title) => [title.title, title]))
-//       : new Map();
-//     updatedTitles.forEach((title) => {
-//       const existingTitle = existingTitlesMap.get(title.title);
-//       if (existingTitle) {
-//         existingTitle.amount = title.amount;
-//       } else {
-//         existingTitlesMap.set(title.title, {
-//           title: title.title,
-//           amount: title.amount,
-//           category: title.category,
-//           active: true,
-//         });
-//       }
-//     });
-//     const finalTitles = Array.from(existingTitlesMap.values());
-//     // Calculate total expenses
-//     const totalExpenses = finalTitles.reduce(
-//       (total, title) => total + title.amount,
-//       0
-//     );
-
-//     // Prepare data for the specified month
-//     const updateData = {
-//       userId: user._id,
-//       month,
-//       year,
-//       titles: finalTitles,
-//       totalExpenses,
-//       active: true,
-//     };
-
-//     const updateAllocation = await ExpensesAllocation.findOneAndUpdate(
-//       { userId: user._id, month, year },
-//       { $set: updateData },
-//       { new: true, upsert: true }
-//     );
-
-//     const response = {
-//       statuscode: "0",
-//       message: existingAllocation
-//         ? "Expenses Allocation updated successfully"
-//         : "Expenses Allocation created successfully",
-//       userId: user._id,
-//       expensesAllocationId: updateAllocation._id,
-//       totalExpenses,
-//       Expenses: finalTitles.map((title) => ({
-//         title: title.title,
-//         amount: title.amount,
-//         active: title.active,
-//         category: title.category,
-//         _id: title._id,
-//       })),
-//     };
-
-//     return res.status(201).json(response);
-//   } catch (err) {
-//     console.error(err);
-//     return res.status(500).json({
-//       statuscode: "1",
-//       message: "Internal Server Error",
-//     });
-//   }
-// };
 exports.upsert = async (req, res) => {
   try {
     const { userId, titles, month, year } = req.body;
@@ -108,10 +14,8 @@ exports.upsert = async (req, res) => {
         message: "User not found",
       });
     }
-
     const existingAllocation = await ExpensesAllocation.findOne({ userId, month, year });
     let updatedTitles = titles || [];
-
     if (!updatedTitles.length) {
       const expensesMaster = await ExpensesMaster.find({ userId });
       updatedTitles = expensesMaster
@@ -120,9 +24,8 @@ exports.upsert = async (req, res) => {
           title: expense.title,
           amount: 0,
           active: expense.active,
-          category: expense.category,
+          category: expense.category
         }));
-
       if (updatedTitles.length === 0) {
         return res.status(404).json({
           statuscode: "1",
@@ -130,31 +33,42 @@ exports.upsert = async (req, res) => {
         });
       }
     }
-
     const existingTitlesMap = existingAllocation
       ? new Map(existingAllocation.titles.map((title) => [title.title, title]))
       : new Map();
-
+    // updatedTitles.forEach((title) => {
+    //   const existingTitle = existingTitlesMap.get(title.title);
+    //   if (existingTitle) {
+    //     existingTitle.amount = title.amount;
+    //   } else {
+    //     existingTitlesMap.set(title.title, {
+    //       title: title.title,
+    //       amount: title.amount,
+    //       category: title.category,
+    //       active: true,
+    //     });
+    //   }
+    // });
     updatedTitles.forEach((title) => {
       const existingTitle = existingTitlesMap.get(title.title);
       if (existingTitle) {
-        existingTitle.amount = title.amount || 0;
+        existingTitle.amount = title.amount || 0; // Ensure this is set correctly
       } else {
         existingTitlesMap.set(title.title, {
           title: title.title,
-          amount: title.amount || 0,
+          amount: title.amount || 0, // Ensure this is set correctly
           category: title.category || [],
           active: true,
         });
       }
     });
-
+    
     const finalTitles = Array.from(existingTitlesMap.values());
-
     // Calculate total expenses
-    const totalExpenses = finalTitles.reduce((total, title) => {
-      return total + (typeof title.amount === 'number' && !isNaN(title.amount) ? title.amount : 0);
-    }, 0);
+    const totalExpenses = finalTitles.reduce(
+      (total, title) => total + title.amount,
+      0
+    );
 
     // Prepare data for the specified month
     const updateData = {
@@ -175,24 +89,19 @@ exports.upsert = async (req, res) => {
     const response = {
       statuscode: "0",
       message: existingAllocation
-          ? "Expenses Allocation updated successfully"
-          : "Expenses Allocation created successfully",
+        ? "Expenses Allocation updated successfully"
+        : "Expenses Allocation created successfully",
       userId: user._id,
       expensesAllocationId: updateAllocation._id,
-      totalExpenses, // Include total expenses in the response
-      Expenses: finalTitles.map(title => ({
-          title: title.title,
-          amount: title.amount,
-          active: title.active,
-          category: title.category.map(cat => ({
-              title: cat.title,
-              amounts: cat.amounts || [],
-              _id: cat._id,
-          })),
-          _id: title._id,
+      totalExpenses,
+      Expenses: finalTitles.map((title) => ({
+        title: title.title,
+        amount: title.amount,
+        active: title.active,
+        category: title.category,
+        _id: title._id,
       })),
-  };
-  
+    };
 
     return res.status(201).json(response);
   } catch (err) {
@@ -203,6 +112,111 @@ exports.upsert = async (req, res) => {
     });
   }
 };
+// exports.upsert = async (req, res) => {
+//   try {
+//     const { userId, titles, month, year } = req.body;
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({
+//         statuscode: "1",
+//         message: "User not found",
+//       });
+//     }
+
+//     const existingAllocation = await ExpensesAllocation.findOne({ userId, month, year });
+//     let updatedTitles = titles || [];
+
+//     if (!updatedTitles.length) {
+//       const expensesMaster = await ExpensesMaster.find({ userId });
+//       updatedTitles = expensesMaster
+//         .filter((expense) => expense.active)
+//         .map((expense) => ({
+//           title: expense.title,
+//           amount: 0,
+//           active: expense.active,
+//           category: expense.category,
+//         }));
+
+//       if (updatedTitles.length === 0) {
+//         return res.status(404).json({
+//           statuscode: "1",
+//           message: "No active expenses found for this user",
+//         });
+//       }
+//     }
+
+//     const existingTitlesMap = existingAllocation
+//       ? new Map(existingAllocation.titles.map((title) => [title.title, title]))
+//       : new Map();
+
+//     updatedTitles.forEach((title) => {
+//       const existingTitle = existingTitlesMap.get(title.title);
+//       if (existingTitle) {
+//         existingTitle.amount = title.amount || 0;
+//       } else {
+//         existingTitlesMap.set(title.title, {
+//           title: title.title,
+//           amount: title.amount || 0,
+//           category: title.category || [],
+//           active: true,
+//         });
+//       }
+//     });
+
+//     const finalTitles = Array.from(existingTitlesMap.values());
+
+    
+//     const totalExpenses = finalTitles.reduce((total, title) => {
+//       return total + (typeof title.amount === 'number' && !isNaN(title.amount) ? title.amount : 0);
+//     }, 0);
+
+    
+//     const updateData = {
+//       userId: user._id,
+//       month,
+//       year,
+//       titles: finalTitles,
+//       totalExpenses,
+//       active: true,
+//     };
+
+//     const updateAllocation = await ExpensesAllocation.findOneAndUpdate(
+//       { userId: user._id, month, year },
+//       { $set: updateData },
+//       { new: true, upsert: true }
+//     );
+
+//     const response = {
+//       statuscode: "0",
+//       message: existingAllocation
+//           ? "Expenses Allocation updated successfully"
+//           : "Expenses Allocation created successfully",
+//       userId: user._id,
+//       expensesAllocationId: updateAllocation._id,
+//       totalExpenses, 
+//       Expenses: finalTitles.map(title => ({
+//           title: title.title,
+//           amount: title.amount,
+//           active: title.active,
+//           category: title.category.map(cat => ({
+//               title: cat.title,
+//               amounts: cat.amounts || [],
+//               _id: cat._id,
+//           })),
+//           _id: title._id,
+//       })),
+//   };
+  
+
+//     return res.status(201).json(response);
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({
+//       statuscode: "1",
+//       message: "Internal Server Error",
+//     });
+//   }
+// };
 
 
 exports.copyPreviousMonthData = async (req, res) => {
@@ -588,35 +602,37 @@ exports.getAll = async (req, res) => {
 
     if (!allocation) {
       const previousAllocation = await ExpensesAllocation.findOne({ userId });
-
+  
       if (previousAllocation) {
-        const modifiedTitles = previousAllocation.titles.map((title) => ({
-          title: title.title,
-          active: title.active,
-          category: title.category.map((cat) => ({
-            ...cat,
-            totalAmount: 0,
-          })),
-          amount: 0,
-        }));
-
-        allocation = new ExpensesAllocation({
-          userId,
-          month,
-          year,
-          titles: modifiedTitles,
-          AllocationTotal: 0,
-          RealityTotal: 0,
-        });
-
-        await allocation.save();
-        return res.status(201).json({
-          statuscode: "0",
-          message:
-            "Previous month's data copied with amount reset to 0 for the new month",
-          data: allocation,
-        });
-      } else {
+          const modifiedTitles = previousAllocation.titles.map((title) => ({
+              title: title.title,
+              active: title.active,
+              amount: 0,
+              category: title.category.map((cat) => ({
+                  ...cat,
+                  totalAmount: 0,
+              })),
+               // Keep the previous amount here
+          }));
+  
+          allocation = new ExpensesAllocation({
+              userId,
+              month,
+              year,
+              titles: modifiedTitles,
+              AllocationTotal: 0,
+              RealityTotal: 0,
+          });
+  
+          await allocation.save();
+          return res.status(201).json({
+              statuscode: "0",
+              message: "Previous month's data copied with amount reset to 0 for the new month",
+              data: [allocation],
+          });
+      }
+  
+   else {
         return res.status(404).json({
           statuscode: "1",
           message: "No allocation data found for the user",
@@ -656,10 +672,10 @@ exports.getAll = async (req, res) => {
     res.status(200).json({
       statuscode: "0",
       message: "Data fetched successfully",
-      data: [
-        allocation,
+      data: [ 
+        allocation,{
         AllocationTotal,
-        categoryTotal,
+        categoryTotal,}
       ],
     });
   } catch (error) {
