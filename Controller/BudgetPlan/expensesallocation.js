@@ -382,7 +382,8 @@ exports.copyPreviousMonthData = async (req, res) => {
 
 exports.postSubCategoryValues = async (req, res) => {
   try {
-    const { userId, month, year, selectedMaster, selectedCategory, amount } = req.body;
+    const { userId, month, year, selectedMaster, selectedCategory, amount } =
+      req.body;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -400,69 +401,78 @@ exports.postSubCategoryValues = async (req, res) => {
       });
     }
 
-    const master = expenses.titles.find((title) => title.title === selectedMaster);
-    const currentDate = moment().format('YYYY-MM-DD'); // Current date
-    const currentTime = moment().format('HH:mm:ss'); // Current time
+    const master = expenses.titles.find(
+      (title) => title.title === selectedMaster
+    );
+    const currentDate = moment().format("YYYY-MM-DD");
+    const currentTime = moment().format("HH:mm:ss");
 
     if (!master) {
-      // If the master category doesn't exist, create it
       const newMaster = {
         title: selectedMaster,
         active: true,
-        category: [{
-          title: selectedCategory,
-          amounts: [{
-            amount: parseFloat(amount),
-            Date: currentDate,
-            time: currentTime
-          }]
-        }]
+        category: [
+          {
+            title: selectedCategory,
+            amounts: [
+              {
+                amount: parseFloat(amount),
+                Date: currentDate,
+                time: currentTime,
+              },
+            ],
+          },
+        ],
       };
       expenses.titles.push(newMaster);
       await expenses.save();
     } else {
-      // If the master category exists, find the subcategory
-      const category = master.category.find(cat => cat.title === selectedCategory);
+      const category = master.category.find(
+        (cat) => cat.title === selectedCategory
+      );
       if (category) {
-        // If the category exists, append the new amount
         category.amounts.push({
           amount: parseFloat(amount),
           Date: currentDate,
-          time: currentTime
+          time: currentTime,
         });
       } else {
-        // If the category doesn't exist, create it
         master.category.push({
           title: selectedCategory,
-          amounts: [{
-            amount: parseFloat(amount),
-            Date: currentDate,
-            time: currentTime
-          }]
+          amounts: [
+            {
+              amount: parseFloat(amount),
+              Date: currentDate,
+              time: currentTime,
+            },
+          ],
         });
       }
       await expenses.save();
     }
 
-    // Prepare the response structure
-    const categoryResponse = master.category.map(cat => {
-      // Calculate total amount for each category
-      const totalAmount = cat.amounts.reduce((sum, entry) => sum + entry.amount, 0);
+    const categoryResponse = master.category.map((cat) => {
+      const totalAmount = cat.amounts.reduce(
+        (sum, entry) => sum + entry.amount,
+        0
+      );
       return {
         title: cat.title,
         amounts: cat.amounts,
-        totalAmount: totalAmount, // Include the total amount here
+        totalAmount: totalAmount,
       };
     });
 
-    // Calculate the overall category total
-    const categoryTotal = categoryResponse.reduce((sum, cat) => sum + cat.totalAmount, 0);
+    const categoryTotal = categoryResponse.reduce(
+      (sum, cat) => sum + cat.totalAmount,
+      0
+    );
 
     return res.status(201).json({
       statusCode: "0",
       message: "Subcategory amount updated successfully",
       category: categoryResponse,
-      categoryTotal: categoryTotal // Include the category total in the response
+      categoryTotal: categoryTotal,
     });
   } catch (err) {
     console.error(err);
@@ -473,6 +483,99 @@ exports.postSubCategoryValues = async (req, res) => {
   }
 };
 
+
+// exports.getAll = async (req, res) => {
+//   //#swagger.tags = ['Expenses Allocation']
+//   const { userId, month, year } = req.body;
+
+//   try {
+//     let allocation = await ExpensesAllocation.findOne({ userId, month, year });
+//     console.log(userId, month, year);
+
+//     // If no allocation for the given month/year, copy previous month's data if available
+//     if (!allocation) {
+//       const previousAllocation = await ExpensesAllocation.findOne({ userId });
+
+//       if (previousAllocation) {
+//         const modifiedTitles = previousAllocation.titles.map((title) => ({
+//           title: title.title,
+//           active: title.active,
+//           category: title.category.map(cat => ({
+//             ...cat,
+//             totalAmount: 0 // Initialize totalAmount for new month data
+//           })),
+//           amount: 0, // Reset amount for new month
+//         }));
+
+//         allocation = new ExpensesAllocation({
+//           userId,
+//           month,
+//           year,
+//           titles: modifiedTitles,
+//           AllocationTotal: 0,
+//           RealityTotal: 0,
+//         });
+
+//         await allocation.save();
+//         return res.status(201).json({
+//           statuscode: "0",
+//           message: "Previous month's data copied with amount reset to 0 for the new month",
+//           data: allocation,
+//         });
+//       } else {
+//         return res.status(404).json({
+//           statuscode: "1",
+//           message: "No allocation data found for the user",
+//         });
+//       }
+//     }
+
+//     // Calculate AllocationTotal by summing each title's amount
+//     let AllocationTotal = allocation.titles.reduce((total, title) => {
+//       return total + (title.amount || 0);
+//     }, 0);
+
+//     // Calculate RealityTotal and categoryTotal for each category in titles
+//     let RealityTotal = 0;
+//     allocation.titles = allocation.titles.map(title => {
+//       // Sum each category's amounts array to get categoryTotal
+//       title.category = title.category.map(cat => {
+//         const categoryTotal = cat.amounts.reduce((sum, amt) => sum + amt.amount, 0);
+//         cat.totalAmount = categoryTotal; // Set category totalAmount
+//         return cat;
+//       });
+
+//       // Sum up all categories' totalAmount for RealityTotal and add to title.amount
+//       const titleTotal = title.category.reduce((catTotal, cat) => catTotal + cat.totalAmount, 0);
+//       RealityTotal += titleTotal;
+
+//       return {
+//         ...title,
+//         amount: titleTotal // Update the title amount to the category total
+//       };
+//     });
+
+//     allocation.AllocationTotal = AllocationTotal;
+//     allocation.RealityTotal = RealityTotal;
+//     await allocation.save();
+
+//     res.status(200).json({
+//       statuscode: "0",
+//       message: "Data fetched successfully",
+//       data: {
+//         allocation,
+//         AllocationTotal,
+//         RealityTotal
+//       },
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       statuscode: "1",
+//       message: "Internal Server Error",
+//     });
+//   }
+// };
 exports.getAll = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']
   const { userId, month, year } = req.body;
@@ -481,6 +584,7 @@ exports.getAll = async (req, res) => {
     let allocation = await ExpensesAllocation.findOne({ userId, month, year });
     console.log(userId, month, year);
 
+    // If no allocation for the given month/year, copy previous month's data if available
     if (!allocation) {
       const previousAllocation = await ExpensesAllocation.findOne({ userId });
 
@@ -488,8 +592,11 @@ exports.getAll = async (req, res) => {
         const modifiedTitles = previousAllocation.titles.map((title) => ({
           title: title.title,
           active: title.active,
-          category: title.category,
-          amount: 0,
+          category: title.category.map(cat => ({
+            ...cat,
+            totalAmount: 0 // Initialize totalAmount for new month data
+          })),
+          amount: 0, // Reset amount for new month
         }));
 
         allocation = new ExpensesAllocation({
@@ -504,8 +611,7 @@ exports.getAll = async (req, res) => {
         await allocation.save();
         return res.status(201).json({
           statuscode: "0",
-          message:
-            "Previous month's data copied with amount reset to 0 for the new month",
+          message: "Previous month's data copied with amount reset to 0 for the new month",
           data: allocation,
         });
       } else {
@@ -516,26 +622,42 @@ exports.getAll = async (req, res) => {
       }
     }
 
-    let AllocationTotal = allocation.titles.reduce(
-      (total, title) => total + title.amount,
-      0
-    );
-
-    let RealityTotal = allocation.titles.reduce((total, title) => {
-      return (
-        total +
-        title.category.reduce((catTotal, cat) => catTotal + cat.amount, 0)
-      );
+    // Calculate AllocationTotal by summing each title's amount
+    let AllocationTotal = allocation.titles.reduce((total, title) => {
+      return total + (title.amount || 0);
     }, 0);
 
+    // Calculate category totals
+    let categoryTotal = 0; // To hold the sum of all category totalAmount
+
+  // Calculate category totals and include totalAmount
+allocation.titles = allocation.titles.map(title => {
+  title.category = title.category.map(cat => {
+    const categoryTotalAmount = cat.amounts.reduce((sum, amt) => sum + amt.amount, 0);
+    cat.totalAmount = categoryTotalAmount; // Set category totalAmount
+    return cat;
+  });
+
+  // Calculate title total based on categories
+  const titleTotal = title.category.reduce((catTotal, cat) => catTotal + cat.totalAmount, 0);
+  return {
+    ...title,
+    amount: titleTotal // Update the title amount to the category total
+  };
+});
+
+
     allocation.AllocationTotal = AllocationTotal;
-    allocation.RealityTotal = RealityTotal;
     await allocation.save();
 
     res.status(200).json({
       statuscode: "0",
       message: "Data fetched successfully",
-      data: [allocation, { AllocationTotal, RealityTotal }],
+      data: {
+        allocation,
+        AllocationTotal,
+        categoryTotal // Include the category total in the response
+      },
     });
   } catch (error) {
     console.error(error);
@@ -545,6 +667,7 @@ exports.getAll = async (req, res) => {
     });
   }
 };
+
 
 exports.getById = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']
