@@ -330,8 +330,10 @@ exports.postSubCategoryValues = async (req, res) => {
     }
 
     const master = expenses.titles.find((title) => title.title === selectedMaster);
-    const currentDate = moment().tz("Your_Time_Zone").format("YYYY-MM-DD"); // Set the time zone
-    const currentTime = moment().tz("Your_Time_Zone").format("HH:mm:ss");    // Set the time zone
+    // Use a specific time zone for date and time formatting
+    const timeZone = "America/New_York"; // Replace with your desired time zone
+    const currentDate = moment().tz(timeZone).format("YYYY-MM-DD");
+    const currentTime = moment().tz(timeZone).format("HH:mm:ss");
 
     if (!master) {
       const newMaster = {
