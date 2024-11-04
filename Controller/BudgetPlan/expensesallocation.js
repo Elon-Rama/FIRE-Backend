@@ -308,10 +308,70 @@ exports.copyPreviousMonthData = async (req, res) => {
 //     });
 //   }
 // };
+exports.updateExpenseAmount = async (req, res) => {
+  //#swagger.tags = ['Expenses Allocation']
+  try {
+    const { userId, entryId, amount } = req.body; // Accept userId, entryId, and new amount
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        statusCode: "1",
+        message: "User not found",
+      });
+    }
+
+    const expenses = await ExpensesAllocation.findOne({ userId });
+    if (!expenses) {
+      return res.status(404).json({
+        statusCode: "1",
+        message: "Expenses record not found",
+      });
+    }
+
+    // Find the entry by entryId
+    let foundEntry = null;
+    for (const title of expenses.titles) {
+      for (const category of title.category) {
+        foundEntry = category.amounts.find(entry => entry._id.toString() === entryId);
+        if (foundEntry) break;
+      }
+      if (foundEntry) break; // Exit outer loop if found
+    }
+
+    if (!foundEntry) {
+      return res.status(404).json({
+        statusCode: "1",
+        message: "Amount entry not found",
+      });
+    }
+
+    // Update the amount
+    foundEntry.amount = parseFloat(amount); // Update the amount
+    foundEntry.Date = moment().tz("Asia/Kolkata").format("YYYY-MM-DD"); // Optionally update date
+    foundEntry.time = moment().tz("Asia/Kolkata").format("HH:mm:ss"); // Optionally update time
+
+    await expenses.save(); // Save changes
+
+    return res.status(200).json({
+      statusCode: "0",
+      message: "Expense amount updated successfully",
+      updatedEntry: foundEntry, // Return the updated entry
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      statusCode: "1",
+      message: "Internal Server Error",
+    });
+  }
+};
+
 exports.postSubCategoryValues = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']
   try {
-    const { userId, month, year, selectedMaster, selectedCategory, amount } = req.body;
+    const { userId, month, year, selectedMaster, selectedCategory, amount } =
+      req.body;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -329,7 +389,9 @@ exports.postSubCategoryValues = async (req, res) => {
       });
     }
 
-    const master = expenses.titles.find((title) => title.title === selectedMaster);
+    const master = expenses.titles.find(
+      (title) => title.title === selectedMaster
+    );
     // Use Indian Standard Time (IST) for date and time formatting
     const timeZone = "Asia/Kolkata";
     const currentDate = moment().tz(timeZone).format("YYYY-MM-DD");
@@ -355,7 +417,9 @@ exports.postSubCategoryValues = async (req, res) => {
       expenses.titles.push(newMaster);
       await expenses.save();
     } else {
-      const category = master.category.find((cat) => cat.title === selectedCategory);
+      const category = master.category.find(
+        (cat) => cat.title === selectedCategory
+      );
       if (category) {
         category.amounts.push({
           amount: parseFloat(amount),
@@ -378,7 +442,10 @@ exports.postSubCategoryValues = async (req, res) => {
     }
 
     const categoryResponse = master.category.map((cat) => {
-      const totalAmount = cat.amounts.reduce((sum, entry) => sum + entry.amount, 0);
+      const totalAmount = cat.amounts.reduce(
+        (sum, entry) => sum + entry.amount,
+        0
+      );
       return {
         title: cat.title,
         amounts: cat.amounts,
@@ -386,7 +453,10 @@ exports.postSubCategoryValues = async (req, res) => {
       };
     });
 
-    const categoryTotal = categoryResponse.reduce((sum, cat) => sum + cat.totalAmount, 0);
+    const categoryTotal = categoryResponse.reduce(
+      (sum, cat) => sum + cat.totalAmount,
+      0
+    );
 
     return res.status(201).json({
       statusCode: "0",
@@ -493,6 +563,8 @@ exports.getAll = async (req, res) => {
     });
   }
 };
+
+
 
 exports.getById = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']

@@ -8,7 +8,8 @@ router.post("/copyPreviousMonth",verifyToken, ExpensesAllocation.copyPreviousMon
 router.post("/subcategorysaveupdate",verifyToken,ExpensesAllocation.postSubCategoryValues);
 router.delete("/delete/:allocationId", verifyToken, ExpensesAllocation.delete);
 router.post("/getAll", verifyToken,ExpensesAllocation.getAll);
-router.get("/:userId/:month/:year",  ExpensesAllocation.getById);
+router.get("/:userId/:month/:year",  verifyToken,ExpensesAllocation.getById);
+router.put("/edit",  verifyToken,ExpensesAllocation.updateExpenseAmount);
 
 // router.post("/create",ExpensesAllocation.upsert);
 // router.post("/copyPreviousMonth",ExpensesAllocation.copyPreviousMonthData);
