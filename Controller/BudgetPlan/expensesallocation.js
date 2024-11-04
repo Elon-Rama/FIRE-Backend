@@ -2,7 +2,7 @@ const User = require("../../Model/emailModel");
 const ExpensesMaster = require("../../Model/masterExpensesModel");
 const ExpensesAllocation = require("../../Model/ExpensesAllocation");
 const ChildExpenses = require("../../Model/ChildExpensesModel");
-const moment = require('moment'); 
+const moment = require("moment");
 
 exports.upsert = async (req, res) => {
   try {
@@ -14,8 +14,14 @@ exports.upsert = async (req, res) => {
         message: "User not found",
       });
     }
-    const existingAllocation = await ExpensesAllocation.findOne({ userId, month, year });
+
+    const existingAllocation = await ExpensesAllocation.findOne({
+      userId,
+      month,
+      year,
+    });
     let updatedTitles = titles || [];
+
     if (!updatedTitles.length) {
       const expensesMaster = await ExpensesMaster.find({ userId });
       updatedTitles = expensesMaster
@@ -24,8 +30,9 @@ exports.upsert = async (req, res) => {
           title: expense.title,
           amount: 0,
           active: expense.active,
-          category: expense.category
+          category: expense.category,
         }));
+
       if (updatedTitles.length === 0) {
         return res.status(404).json({
           statuscode: "1",
@@ -33,44 +40,36 @@ exports.upsert = async (req, res) => {
         });
       }
     }
+
     const existingTitlesMap = existingAllocation
       ? new Map(existingAllocation.titles.map((title) => [title.title, title]))
       : new Map();
-    // updatedTitles.forEach((title) => {
-    //   const existingTitle = existingTitlesMap.get(title.title);
-    //   if (existingTitle) {
-    //     existingTitle.amount = title.amount;
-    //   } else {
-    //     existingTitlesMap.set(title.title, {
-    //       title: title.title,
-    //       amount: title.amount,
-    //       category: title.category,
-    //       active: true,
-    //     });
-    //   }
-    // });
+
     updatedTitles.forEach((title) => {
       const existingTitle = existingTitlesMap.get(title.title);
       if (existingTitle) {
-        existingTitle.amount = title.amount || 0; // Ensure this is set correctly
+        existingTitle.amount = title.amount || 0;
       } else {
         existingTitlesMap.set(title.title, {
           title: title.title,
-          amount: title.amount || 0, // Ensure this is set correctly
+          amount: title.amount || 0,
           category: title.category || [],
           active: true,
         });
       }
     });
-    
-    const finalTitles = Array.from(existingTitlesMap.values());
-    // Calculate total expenses
-    const totalExpenses = finalTitles.reduce(
-      (total, title) => total + title.amount,
-      0
-    );
 
-    // Prepare data for the specified month
+    const finalTitles = Array.from(existingTitlesMap.values());
+
+    const totalExpenses = finalTitles.reduce((total, title) => {
+      return (
+        total +
+        (typeof title.amount === "number" && !isNaN(title.amount)
+          ? title.amount
+          : 0)
+      );
+    }, 0);
+
     const updateData = {
       userId: user._id,
       month,
@@ -98,7 +97,11 @@ exports.upsert = async (req, res) => {
         title: title.title,
         amount: title.amount,
         active: title.active,
-        category: title.category,
+        category: title.category.map((cat) => ({
+          title: cat.title,
+          amounts: cat.amounts || [],
+          _id: cat._id,
+        })),
         _id: title._id,
       })),
     };
@@ -112,112 +115,6 @@ exports.upsert = async (req, res) => {
     });
   }
 };
-// exports.upsert = async (req, res) => {
-//   try {
-//     const { userId, titles, month, year } = req.body;
-//     const user = await User.findById(userId);
-//     if (!user) {
-//       return res.status(404).json({
-//         statuscode: "1",
-//         message: "User not found",
-//       });
-//     }
-
-//     const existingAllocation = await ExpensesAllocation.findOne({ userId, month, year });
-//     let updatedTitles = titles || [];
-
-//     if (!updatedTitles.length) {
-//       const expensesMaster = await ExpensesMaster.find({ userId });
-//       updatedTitles = expensesMaster
-//         .filter((expense) => expense.active)
-//         .map((expense) => ({
-//           title: expense.title,
-//           amount: 0,
-//           active: expense.active,
-//           category: expense.category,
-//         }));
-
-//       if (updatedTitles.length === 0) {
-//         return res.status(404).json({
-//           statuscode: "1",
-//           message: "No active expenses found for this user",
-//         });
-//       }
-//     }
-
-//     const existingTitlesMap = existingAllocation
-//       ? new Map(existingAllocation.titles.map((title) => [title.title, title]))
-//       : new Map();
-
-//     updatedTitles.forEach((title) => {
-//       const existingTitle = existingTitlesMap.get(title.title);
-//       if (existingTitle) {
-//         existingTitle.amount = title.amount || 0;
-//       } else {
-//         existingTitlesMap.set(title.title, {
-//           title: title.title,
-//           amount: title.amount || 0,
-//           category: title.category || [],
-//           active: true,
-//         });
-//       }
-//     });
-
-//     const finalTitles = Array.from(existingTitlesMap.values());
-
-    
-//     const totalExpenses = finalTitles.reduce((total, title) => {
-//       return total + (typeof title.amount === 'number' && !isNaN(title.amount) ? title.amount : 0);
-//     }, 0);
-
-    
-//     const updateData = {
-//       userId: user._id,
-//       month,
-//       year,
-//       titles: finalTitles,
-//       totalExpenses,
-//       active: true,
-//     };
-
-//     const updateAllocation = await ExpensesAllocation.findOneAndUpdate(
-//       { userId: user._id, month, year },
-//       { $set: updateData },
-//       { new: true, upsert: true }
-//     );
-
-//     const response = {
-//       statuscode: "0",
-//       message: existingAllocation
-//           ? "Expenses Allocation updated successfully"
-//           : "Expenses Allocation created successfully",
-//       userId: user._id,
-//       expensesAllocationId: updateAllocation._id,
-//       totalExpenses, 
-//       Expenses: finalTitles.map(title => ({
-//           title: title.title,
-//           amount: title.amount,
-//           active: title.active,
-//           category: title.category.map(cat => ({
-//               title: cat.title,
-//               amounts: cat.amounts || [],
-//               _id: cat._id,
-//           })),
-//           _id: title._id,
-//       })),
-//   };
-  
-
-//     return res.status(201).json(response);
-//   } catch (err) {
-//     console.error(err);
-//     return res.status(500).json({
-//       statuscode: "1",
-//       message: "Internal Server Error",
-//     });
-//   }
-// };
-
 
 exports.copyPreviousMonthData = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']
@@ -306,95 +203,6 @@ exports.copyPreviousMonthData = async (req, res) => {
     });
   }
 };
-
-// exports.postSubCategoryValues = async (req, res) => {
-//   try {
-//     const { userId, month, year, selectedMaster, selectedCategory, amount } = req.body;
-
-//     const user = await User.findById(userId);
-//     if (!user) {
-//       return res.status(404).json({
-//         statusCode: "1",
-//         message: "User not found",
-//       });
-//     }
-
-//     const expenses = await ExpensesAllocation.findOne({ userId, month, year });
-//     if (!expenses) {
-//       return res.status(404).json({
-//         statusCode: "1",
-//         message: "Expenses record not found for the specified month and year",
-//       });
-//     }
-
-//     const master = expenses.titles.find((title) => title.title === selectedMaster);
-//     const currentDate = moment().format('YYYY-MM-DD'); 
-//     const currentTime = moment().format('HH:mm:ss'); 
-
-//     if (!master) {
-      
-//       const newMaster = {
-//         title: selectedMaster,
-//         active: true,
-//         category: [{
-//           title: selectedCategory,
-//           amounts: [{
-//             amount: parseFloat(amount),
-//             Date: currentDate,
-//             time: currentTime
-//           }]
-//         }]
-//       };
-//       expenses.titles.push(newMaster);
-//       await expenses.save();
-//     } else {
-    
-//       const category = master.category.find(cat => cat.title === selectedCategory);
-//       if (category) {
-        
-//         category.amounts.push({
-//           amount: parseFloat(amount),
-//           Date: currentDate,
-//           time: currentTime
-//         });
-//       } else {
-        
-//         master.category.push({
-//           title: selectedCategory,
-//           amounts: [{
-//             amount: parseFloat(amount),
-//             Date: currentDate,
-//             time: currentTime
-//           }]
-//         });
-//       }
-//       await expenses.save();
-//     }
-
-    
-//     const categoryResponse = master.category.map(cat => {
-      
-//       const totalAmount = cat.amounts.reduce((sum, entry) => sum + entry.amount, 0);
-//       return {
-//         title: cat.title,
-//         amounts: cat.amounts,
-//         totalAmount: totalAmount, 
-//       };
-//     });
-
-//     return res.status(201).json({
-//       statusCode: "0",
-//       message: "Subcategory amount updated successfully",
-//       category: categoryResponse,
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     return res.status(500).json({
-//       statusCode: "1",
-//       message: "Internal Server Error",
-//     });
-//   }
-// };
 
 exports.postSubCategoryValues = async (req, res) => {
   try {
@@ -499,140 +307,44 @@ exports.postSubCategoryValues = async (req, res) => {
   }
 };
 
-
-// exports.getAll = async (req, res) => {
-//   //#swagger.tags = ['Expenses Allocation']
-//   const { userId, month, year } = req.body;
-
-//   try {
-//     let allocation = await ExpensesAllocation.findOne({ userId, month, year });
-//     console.log(userId, month, year);
-
-//     // If no allocation for the given month/year, copy previous month's data if available
-//     if (!allocation) {
-//       const previousAllocation = await ExpensesAllocation.findOne({ userId });
-
-//       if (previousAllocation) {
-//         const modifiedTitles = previousAllocation.titles.map((title) => ({
-//           title: title.title,
-//           active: title.active,
-//           category: title.category.map(cat => ({
-//             ...cat,
-//             totalAmount: 0 // Initialize totalAmount for new month data
-//           })),
-//           amount: 0, // Reset amount for new month
-//         }));
-
-//         allocation = new ExpensesAllocation({
-//           userId,
-//           month,
-//           year,
-//           titles: modifiedTitles,
-//           AllocationTotal: 0,
-//           RealityTotal: 0,
-//         });
-
-//         await allocation.save();
-//         return res.status(201).json({
-//           statuscode: "0",
-//           message: "Previous month's data copied with amount reset to 0 for the new month",
-//           data: allocation,
-//         });
-//       } else {
-//         return res.status(404).json({
-//           statuscode: "1",
-//           message: "No allocation data found for the user",
-//         });
-//       }
-//     }
-
-//     // Calculate AllocationTotal by summing each title's amount
-//     let AllocationTotal = allocation.titles.reduce((total, title) => {
-//       return total + (title.amount || 0);
-//     }, 0);
-
-//     // Calculate RealityTotal and categoryTotal for each category in titles
-//     let RealityTotal = 0;
-//     allocation.titles = allocation.titles.map(title => {
-//       // Sum each category's amounts array to get categoryTotal
-//       title.category = title.category.map(cat => {
-//         const categoryTotal = cat.amounts.reduce((sum, amt) => sum + amt.amount, 0);
-//         cat.totalAmount = categoryTotal; // Set category totalAmount
-//         return cat;
-//       });
-
-//       // Sum up all categories' totalAmount for RealityTotal and add to title.amount
-//       const titleTotal = title.category.reduce((catTotal, cat) => catTotal + cat.totalAmount, 0);
-//       RealityTotal += titleTotal;
-
-//       return {
-//         ...title,
-//         amount: titleTotal // Update the title amount to the category total
-//       };
-//     });
-
-//     allocation.AllocationTotal = AllocationTotal;
-//     allocation.RealityTotal = RealityTotal;
-//     await allocation.save();
-
-//     res.status(200).json({
-//       statuscode: "0",
-//       message: "Data fetched successfully",
-//       data: {
-//         allocation,
-//         AllocationTotal,
-//         RealityTotal
-//       },
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({
-//       statuscode: "1",
-//       message: "Internal Server Error",
-//     });
-//   }
-// };
 exports.getAll = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']
   const { userId, month, year } = req.body;
 
   try {
     let allocation = await ExpensesAllocation.findOne({ userId, month, year });
-    console.log(userId, month, year);
 
     if (!allocation) {
       const previousAllocation = await ExpensesAllocation.findOne({ userId });
-  
+
       if (previousAllocation) {
-          const modifiedTitles = previousAllocation.titles.map((title) => ({
-              title: title.title,
-              active: title.active,
-              amount: 0,
-              category: title.category.map((cat) => ({
-                  ...cat,
-                  totalAmount: 0,
-              })),
-               // Keep the previous amount here
-          }));
-  
-          allocation = new ExpensesAllocation({
-              userId,
-              month,
-              year,
-              titles: modifiedTitles,
-              AllocationTotal: 0,
-              RealityTotal: 0,
-          });
-  
-          await allocation.save();
-          return res.status(201).json({
-              statuscode: "0",
-              message: "Previous month's data copied with amount reset to 0 for the new month",
-              data: [allocation],
-          });
-      }
-  
-   else {
+        const modifiedTitles = previousAllocation.titles.map((title) => ({
+          title: title.title,
+          active: title.active,
+          amount: 0,
+          category: title.category.map((cat) => ({
+            ...cat,
+            totalAmount: 0,
+          })),
+        }));
+
+        allocation = new ExpensesAllocation({
+          userId,
+          month,
+          year,
+          titles: modifiedTitles,
+          AllocationTotal: 0,
+          RealityTotal: 0,
+        });
+
+        await allocation.save();
+        return res.status(201).json({
+          statuscode: "0",
+          message:
+            "Previous month's data copied with amount reset to 0 for the new month",
+          data: [allocation],
+        });
+      } else {
         return res.status(404).json({
           statuscode: "1",
           message: "No allocation data found for the user",
@@ -672,10 +384,12 @@ exports.getAll = async (req, res) => {
     res.status(200).json({
       statuscode: "0",
       message: "Data fetched successfully",
-      data: [ 
-        allocation,{
-        AllocationTotal,
-        categoryTotal,}
+      data: [
+        allocation,
+        {
+          AllocationTotal,
+          categoryTotal,
+        },
       ],
     });
   } catch (error) {
@@ -686,7 +400,6 @@ exports.getAll = async (req, res) => {
     });
   }
 };
-
 
 exports.getById = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']
