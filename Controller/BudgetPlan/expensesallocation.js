@@ -175,22 +175,24 @@ exports.upsert = async (req, res) => {
     const response = {
       statuscode: "0",
       message: existingAllocation
-        ? "Expenses Allocation updated successfully"
-        : "Expenses Allocation created successfully",
+          ? "Expenses Allocation updated successfully"
+          : "Expenses Allocation created successfully",
       userId: user._id,
       expensesAllocationId: updateAllocation._id,
-      Expenses: finalTitles.map((title) => ({
-        title: title.title,
-        amount: title.amount,
-        active: title.active,
-        category: title.category.map(cat => ({
-          title: cat.title,
-          amounts: cat.amounts || [], // Ensure this is populated with relevant amounts
-          _id: cat._id,
-        })),
-        _id: title._id,
-      })).concat([{ totalExpenses }]), // Add total expenses at the end
-    };
+      totalExpenses, // Include total expenses in the response
+      Expenses: finalTitles.map(title => ({
+          title: title.title,
+          amount: title.amount,
+          active: title.active,
+          category: title.category.map(cat => ({
+              title: cat.title,
+              amounts: cat.amounts || [],
+              _id: cat._id,
+          })),
+          _id: title._id,
+      })),
+  };
+  
 
     return res.status(201).json(response);
   } catch (err) {
@@ -584,7 +586,6 @@ exports.getAll = async (req, res) => {
     let allocation = await ExpensesAllocation.findOne({ userId, month, year });
     console.log(userId, month, year);
 
-    // If no allocation for the given month/year, copy previous month's data if available
     if (!allocation) {
       const previousAllocation = await ExpensesAllocation.findOne({ userId });
 
@@ -592,11 +593,11 @@ exports.getAll = async (req, res) => {
         const modifiedTitles = previousAllocation.titles.map((title) => ({
           title: title.title,
           active: title.active,
-          category: title.category.map(cat => ({
+          category: title.category.map((cat) => ({
             ...cat,
-            totalAmount: 0 // Initialize totalAmount for new month data
+            totalAmount: 0,
           })),
-          amount: 0, // Reset amount for new month
+          amount: 0,
         }));
 
         allocation = new ExpensesAllocation({
@@ -611,7 +612,8 @@ exports.getAll = async (req, res) => {
         await allocation.save();
         return res.status(201).json({
           statuscode: "0",
-          message: "Previous month's data copied with amount reset to 0 for the new month",
+          message:
+            "Previous month's data copied with amount reset to 0 for the new month",
           data: allocation,
         });
       } else {
@@ -622,30 +624,31 @@ exports.getAll = async (req, res) => {
       }
     }
 
-    // Calculate AllocationTotal by summing each title's amount
     let AllocationTotal = allocation.titles.reduce((total, title) => {
       return total + (title.amount || 0);
     }, 0);
 
-    // Calculate category totals
-    let categoryTotal = 0; // To hold the sum of all category totalAmount
+    let categoryTotal = 0;
 
-  // Calculate category totals and include totalAmount
-allocation.titles = allocation.titles.map(title => {
-  title.category = title.category.map(cat => {
-    const categoryTotalAmount = cat.amounts.reduce((sum, amt) => sum + amt.amount, 0);
-    cat.totalAmount = categoryTotalAmount; // Set category totalAmount
-    return cat;
-  });
+    allocation.titles = allocation.titles.map((title) => {
+      title.category = title.category.map((cat) => {
+        const categoryTotalAmount = cat.amounts.reduce(
+          (sum, amt) => sum + amt.amount,
+          0
+        );
+        cat.totalAmount = categoryTotalAmount;
+        return cat;
+      });
 
-  // Calculate title total based on categories
-  const titleTotal = title.category.reduce((catTotal, cat) => catTotal + cat.totalAmount, 0);
-  return {
-    ...title,
-    amount: titleTotal // Update the title amount to the category total
-  };
-});
-
+      const titleTotal = title.category.reduce(
+        (catTotal, cat) => catTotal + cat.totalAmount,
+        0
+      );
+      return {
+        ...title,
+        amount: titleTotal,
+      };
+    });
 
     allocation.AllocationTotal = AllocationTotal;
     await allocation.save();
@@ -653,11 +656,11 @@ allocation.titles = allocation.titles.map(title => {
     res.status(200).json({
       statuscode: "0",
       message: "Data fetched successfully",
-      data: {
+      data: [
         allocation,
         AllocationTotal,
-        categoryTotal // Include the category total in the response
-      },
+        categoryTotal,
+      ],
     });
   } catch (error) {
     console.error(error);
