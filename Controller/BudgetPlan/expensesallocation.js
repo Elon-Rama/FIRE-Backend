@@ -3,6 +3,7 @@ const ExpensesMaster = require("../../Model/masterExpensesModel");
 const ExpensesAllocation = require("../../Model/ExpensesAllocation");
 const ChildExpenses = require("../../Model/ChildExpensesModel");
 const moment = require("moment");
+const moment = require("moment-timezone");
 
 exports.upsert = async (req, res) => {
   try {
@@ -204,10 +205,113 @@ exports.copyPreviousMonthData = async (req, res) => {
   }
 };
 
+// exports.postSubCategoryValues = async (req, res) => {
+//   //#swagger.tags = ['Expenses Allocation']
+//   try {
+//     const { userId, month, year, selectedMaster, selectedCategory, amount } =
+//       req.body;
+
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({
+//         statusCode: "1",
+//         message: "User not found",
+//       });
+//     }
+
+//     const expenses = await ExpensesAllocation.findOne({ userId, month, year });
+//     if (!expenses) {
+//       return res.status(404).json({
+//         statusCode: "1",
+//         message: "Expenses record not found for the specified month and year",
+//       });
+//     }
+
+//     const master = expenses.titles.find(
+//       (title) => title.title === selectedMaster
+//     );
+//     const currentDate = moment().format("YYYY-MM-DD");
+//     const currentTime = moment().format("HH:mm:ss");
+
+//     if (!master) {
+//       const newMaster = {
+//         title: selectedMaster,
+//         active: true,
+//         category: [
+//           {
+//             title: selectedCategory,
+//             amounts: [
+//               {
+//                 amount: parseFloat(amount),
+//                 Date: currentDate,
+//                 time: currentTime,
+//               },
+//             ],
+//           },
+//         ],
+//       };
+//       expenses.titles.push(newMaster);
+//       await expenses.save();
+//     } else {
+//       const category = master.category.find(
+//         (cat) => cat.title === selectedCategory
+//       );
+//       if (category) {
+//         category.amounts.push({
+//           amount: parseFloat(amount),
+//           Date: currentDate,
+//           time: currentTime,
+//         });
+//       } else {
+//         master.category.push({
+//           title: selectedCategory,
+//           amounts: [
+//             {
+//               amount: parseFloat(amount),
+//               Date: currentDate,
+//               time: currentTime,
+//             },
+//           ],
+//         });
+//       }
+//       await expenses.save();
+//     }
+
+//     const categoryResponse = master.category.map((cat) => {
+//       const totalAmount = cat.amounts.reduce(
+//         (sum, entry) => sum + entry.amount,
+//         0
+//       );
+//       return {
+//         title: cat.title,
+//         amounts: cat.amounts,
+//         totalAmount: totalAmount,
+//       };
+//     });
+
+//     const categoryTotal = categoryResponse.reduce(
+//       (sum, cat) => sum + cat.totalAmount,
+//       0
+//     );
+
+//     return res.status(201).json({
+//       statusCode: "0",
+//       message: "Subcategory amount updated successfully",
+//       category: categoryResponse,
+//       categoryTotal: categoryTotal,
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({
+//       statusCode: "1",
+//       message: "Internal Server Error",
+//     });
+//   }
+// };
 exports.postSubCategoryValues = async (req, res) => {
+  //#swagger.tags = ['Expenses Allocation']
   try {
-    const { userId, month, year, selectedMaster, selectedCategory, amount } =
-      req.body;
+    const { userId, month, year, selectedMaster, selectedCategory, amount } = req.body;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -225,11 +329,9 @@ exports.postSubCategoryValues = async (req, res) => {
       });
     }
 
-    const master = expenses.titles.find(
-      (title) => title.title === selectedMaster
-    );
-    const currentDate = moment().format("YYYY-MM-DD");
-    const currentTime = moment().format("HH:mm:ss");
+    const master = expenses.titles.find((title) => title.title === selectedMaster);
+    const currentDate = moment().tz("Your_Time_Zone").format("YYYY-MM-DD"); // Set the time zone
+    const currentTime = moment().tz("Your_Time_Zone").format("HH:mm:ss");    // Set the time zone
 
     if (!master) {
       const newMaster = {
@@ -251,9 +353,7 @@ exports.postSubCategoryValues = async (req, res) => {
       expenses.titles.push(newMaster);
       await expenses.save();
     } else {
-      const category = master.category.find(
-        (cat) => cat.title === selectedCategory
-      );
+      const category = master.category.find((cat) => cat.title === selectedCategory);
       if (category) {
         category.amounts.push({
           amount: parseFloat(amount),
@@ -276,10 +376,7 @@ exports.postSubCategoryValues = async (req, res) => {
     }
 
     const categoryResponse = master.category.map((cat) => {
-      const totalAmount = cat.amounts.reduce(
-        (sum, entry) => sum + entry.amount,
-        0
-      );
+      const totalAmount = cat.amounts.reduce((sum, entry) => sum + entry.amount, 0);
       return {
         title: cat.title,
         amounts: cat.amounts,
@@ -287,10 +384,7 @@ exports.postSubCategoryValues = async (req, res) => {
       };
     });
 
-    const categoryTotal = categoryResponse.reduce(
-      (sum, cat) => sum + cat.totalAmount,
-      0
-    );
+    const categoryTotal = categoryResponse.reduce((sum, cat) => sum + cat.totalAmount, 0);
 
     return res.status(201).json({
       statusCode: "0",
