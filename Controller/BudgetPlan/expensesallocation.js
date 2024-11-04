@@ -330,8 +330,8 @@ exports.postSubCategoryValues = async (req, res) => {
     }
 
     const master = expenses.titles.find((title) => title.title === selectedMaster);
-    // Use a specific time zone for date and time formatting
-    const timeZone = "America/New_York"; // Replace with your desired time zone
+    // Use Indian Standard Time (IST) for date and time formatting
+    const timeZone = "Asia/Kolkata";
     const currentDate = moment().tz(timeZone).format("YYYY-MM-DD");
     const currentTime = moment().tz(timeZone).format("HH:mm:ss");
 
