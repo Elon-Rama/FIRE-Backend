@@ -11,6 +11,7 @@ const realityRoute = require('./Router/realityRoute');
 const expensesRealityRoute = require('./Router/expensesRealityRouter');
 const childRoute = require('./Router/childRoute');
 // const emergencyRoute = require('./Router/emergencyRoute');
+const emergencyFundRoute = require('../Routes/Router/emergencyFundRoute')
 
 api.use('/user',emailRoute);
 api.use('/profile',userRoute);
@@ -22,5 +23,5 @@ api.use('/reality',realityRoute);
 api.use('/childexpenses',childRoute);
 api.use('/realityexpenses',expensesRealityRoute);
 // api.use('/emergency',emergencyRoute);
-
+api.use('/emergencyFund',emergencyFundRoute)
 module.exports = api;
