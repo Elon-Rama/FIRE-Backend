@@ -11,7 +11,7 @@ const realityRoute = require('./Router/realityRoute');
 const expensesRealityRoute = require('./Router/expensesRealityRouter');
 const childRoute = require('./Router/childRoute');
 // const emergencyRoute = require('./Router/emergencyRoute');
-const emergencyFundRoute = require('../Routes/Router/emergencyFundRoute')
+const emergencyFundRoute = require('./Router/emergencyFundRoute')
 
 api.use('/user',emailRoute);
 api.use('/profile',userRoute);
