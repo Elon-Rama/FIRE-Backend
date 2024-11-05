@@ -30,6 +30,14 @@ exports.create = async (req, res) => {
 
     await userSavings.save();
 
+    const now = new Date();
+    const responseDate = {
+      year: now.getFullYear(),
+      month: now.getMonth() + 1, // Months are zero-indexed
+      date: now.getDate(),
+      time: now.toLocaleTimeString(), // You can customize the format as needed
+    };
+
     res.status(201).json({
       message: 'Financial plan saved successfully',
       data: {
@@ -38,6 +46,7 @@ exports.create = async (req, res) => {
         monthlySavings,
         totalEmergencyFund,
       },
+      responseDate,
     });
   } catch (error) {
     console.error(error);
