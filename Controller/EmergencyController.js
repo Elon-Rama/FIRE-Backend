@@ -22,7 +22,7 @@ exports.upsert = async (req, res) => {
   try {
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({
+      return res.status(200).json({
         statusCode: "1",
         message: "User not found",
       });
@@ -52,7 +52,7 @@ exports.upsert = async (req, res) => {
       const updatedFund = await EmergencyFund.findById(emergencyId);
 
       if (!updatedFund) {
-        return res.status(404).json({
+        return res.status(200).json({
           statusCode: "1",
           message: "Emergency Fund not found",
         });
@@ -75,7 +75,7 @@ exports.upsert = async (req, res) => {
 
       await updatedFund.save();
 
-      return res.status(200).json({
+      return res.status(201).json({
         statusCode: "0",
         message: "Emergency Fund updated successfully",
         data: updatedFund,
@@ -93,7 +93,7 @@ exports.upsert = async (req, res) => {
 
       await emergencyFund.save();
 
-      return res.status(200).json({
+      return res.status(201).json({
         statusCode: "0",
         message: "Emergency Fund created successfully",
         data: emergencyFund,
