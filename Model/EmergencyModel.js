@@ -51,6 +51,11 @@ const emergencySchema = new mongoose.Schema({
       ],
     },
   ],
+  totalAmount: { 
+    type: Number,
+    required: false,
+    default: 0,
+  },
 });
 
 module.exports = mongoose.model("EmergencyFund", emergencySchema);

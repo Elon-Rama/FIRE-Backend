@@ -8,6 +8,7 @@ const getCurrentDateTime = () => {
     time: now.toTimeString().split(" ")[0],
   };
 };
+
 exports.upsert = async (req, res) => {
   //#swagger.tags = ['Emergency-Fund']
   const {
@@ -29,8 +30,8 @@ exports.upsert = async (req, res) => {
     }
 
     const expectedFund = monthlyExpenses * monthsNeed;
-
     const entries = [];
+
     if (initialEntry) {
       const { amount, rateofInterest, savingsMode } = initialEntry;
       const { date, time } = getCurrentDateTime();
@@ -65,6 +66,7 @@ exports.upsert = async (req, res) => {
           amount: entries[0].amount,
           rateofInterest: entries[0].rateofInterest,
           savingsMode: entries[0].savingsMode,
+          totalAmount:entries[0].totalAmount,
         });
       }
 
@@ -72,6 +74,12 @@ exports.upsert = async (req, res) => {
       updatedFund.monthsNeed = monthsNeed;
       updatedFund.savingsperMonth = savingsperMonth;
       updatedFund.expectedFund = expectedFund;
+
+      // Calculate totalAmount by summing all 'amount' values in the entries
+      updatedFund.totalAmount = updatedFund.actualFund[0].Entry.reduce(
+        (sum, entry) => sum + (entry.amount || 0),
+        0
+      );
 
       await updatedFund.save();
 
@@ -81,6 +89,8 @@ exports.upsert = async (req, res) => {
         data: updatedFund,
       });
     } else {
+      
+
       const emergencyFund = new EmergencyFund({
         userId,
         monthlyExpenses,
@@ -88,9 +98,9 @@ exports.upsert = async (req, res) => {
         savingsperMonth,
         expectedFund,
         actualFund,
-        entries,
+        totalAmount,
       });
-
+      const totalAmount = entries.reduce((sum, entry) => sum + (entry.amount || 0), 0);
       await emergencyFund.save();
 
       return res.status(201).json({
@@ -106,6 +116,7 @@ exports.upsert = async (req, res) => {
     });
   }
 };
+
 
 exports.getAll = async (req, res) => {
   //#swagger.tags = ['Emergency-Fund']
@@ -137,7 +148,7 @@ exports.getAll = async (req, res) => {
 exports.getById = async (req, res) => {
   //#swagger.tags = ['Emergency-Fund']
   try {
-    const emergency = await EmergencyFund.findOne({ _id: req.params.emergency_id }); // Match parameter name
+    const emergency = await EmergencyFund.findOne({ _id: req.params.emergency_id }); 
     if (emergency) {
       res.status(200).json({
         statusCode: "0",
@@ -173,7 +184,7 @@ exports.deleteById = async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({
-      message: "Failed to delete a emergency ",
+      message: "Failed to delete a emergency",
     });
   }
 };
