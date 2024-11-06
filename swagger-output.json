@@ -1929,6 +1929,74 @@
           }
         }
       }
+    },
+    "/api/emergency/create": {
+      "post": {
+        "tags": [
+          "Emergency-Fund"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "example": "any"
+                },
+                "monthlyExpenses": {
+                  "example": "any"
+                },
+                "monthsNeeded": {
+                  "example": "any"
+                },
+                "savingsPerMonth": {
+                  "example": "any"
+                },
+                "initialEntry": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/emergency/all": {
+      "get": {
+        "tags": [
+          "Emergency-Fund"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
     }
   }
 }

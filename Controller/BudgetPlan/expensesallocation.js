@@ -311,7 +311,7 @@ exports.copyPreviousMonthData = async (req, res) => {
 exports.updateExpenseAmount = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']
   try {
-    const { userId, entryId, amount } = req.body; // Accept userId, entryId, and new amount
+    const { userId, entryId, amount } = req.body; 
 
     const user = await User.findById(userId);
     if (!user) {
