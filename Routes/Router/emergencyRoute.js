@@ -18,7 +18,7 @@ const express = require("express");
 const router = express.Router();
 const EmergencyFund = require("../../Controller/EmergencyController");
 
-router.post("/create", EmergencyFund.createEmergencyFund);
+router.post("/create", EmergencyFund.upsert);
 router.get("/all",  EmergencyFund.getAll);
 // router.put("/update/:id", EmergencyFund.updateEmergencyFund);
 // router.post("/add-entry", EmergencyFund.Entry);

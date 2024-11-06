@@ -8,8 +8,7 @@ const getCurrentDateTime = () => {
     time: now.toTimeString().split(" ")[0],
   };
 };
-
-exports.createEmergencyFund = async (req, res) => {
+exports.upsert = async (req, res) => {
   //#swagger.tags = ['Emergency-Fund']
   const {
     userId,
@@ -17,6 +16,7 @@ exports.createEmergencyFund = async (req, res) => {
     monthsNeed,
     savingsperMonth,
     initialEntry,
+    emergencyId,
   } = req.body;
 
   try {
@@ -32,40 +32,75 @@ exports.createEmergencyFund = async (req, res) => {
 
     const entries = [];
     if (initialEntry) {
-      const { amount, rateOfInterest, savingsMode } = initialEntry;
+      const { amount, rateofInterest, savingsMode } = initialEntry;
       const { date, time } = getCurrentDateTime();
 
       const entry = {
         date,
         time,
         amount,
-        rateOfInterest,
+        rateofInterest,
         savingsMode,
       };
+
       entries.push(entry);
     }
 
     const actualFund = initialEntry ? [{ Entry: entries }] : [];
 
-    const emergencyFund = new EmergencyFund({
-      userId,
-      monthlyExpenses,
-      monthsNeed,
-      savingsperMonth,
-      expectedFund,
-      actualFund,
-      entries,
-    });
+    if (emergencyId) {
+      const updatedFund = await EmergencyFund.findById(emergencyId);
 
-    await emergencyFund.save();
+      if (!updatedFund) {
+        return res.status(404).json({
+          statusCode: "1",
+          message: "Emergency Fund not found",
+        });
+      }
 
-    res.status(200).json({
-      statusCode: "0",
-      message: "Emergency Fund created successfully",
-      data: emergencyFund,
-    });
+      if (initialEntry) {
+        updatedFund.actualFund[0].Entry.push({
+          date: entries[0].date,
+          time: entries[0].time,
+          amount: entries[0].amount,
+          rateofInterest: entries[0].rateofInterest,
+          savingsMode: entries[0].savingsMode,
+        });
+      }
+
+      updatedFund.monthlyExpenses = monthlyExpenses;
+      updatedFund.monthsNeed = monthsNeed;
+      updatedFund.savingsperMonth = savingsperMonth;
+      updatedFund.expectedFund = expectedFund;
+
+      await updatedFund.save();
+
+      return res.status(200).json({
+        statusCode: "0",
+        message: "Emergency Fund updated successfully",
+        data: updatedFund,
+      });
+    } else {
+      const emergencyFund = new EmergencyFund({
+        userId,
+        monthlyExpenses,
+        monthsNeed,
+        savingsperMonth,
+        expectedFund,
+        actualFund,
+        entries,
+      });
+
+      await emergencyFund.save();
+
+      return res.status(200).json({
+        statusCode: "0",
+        message: "Emergency Fund created successfully",
+        data: emergencyFund,
+      });
+    }
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       statusCode: "1",
       message: error.message,
     });
