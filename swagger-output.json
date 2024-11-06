@@ -1949,10 +1949,10 @@
                 "monthlyExpenses": {
                   "example": "any"
                 },
-                "monthsNeeded": {
+                "monthsNeed": {
                   "example": "any"
                 },
-                "savingsPerMonth": {
+                "savingsperMonth": {
                   "example": "any"
                 },
                 "initialEntry": {

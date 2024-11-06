@@ -14,8 +14,8 @@ exports.createEmergencyFund = async (req, res) => {
   const {
     userId,
     monthlyExpenses,
-    monthsNeeded,
-    savingsPerMonth,
+    monthsNeed,
+    savingsperMonth,
     initialEntry,
   } = req.body;
 
@@ -28,7 +28,7 @@ exports.createEmergencyFund = async (req, res) => {
       });
     }
 
-    const expectedFund = monthlyExpenses * monthsNeeded;
+    const expectedFund = monthlyExpenses * monthsNeed;
 
     const entries = [];
     if (initialEntry) {
@@ -50,8 +50,8 @@ exports.createEmergencyFund = async (req, res) => {
     const emergencyFund = new EmergencyFund({
       userId,
       monthlyExpenses,
-      monthsNeeded,
-      savingsPerMonth,
+      monthsNeed,
+      savingsperMonth,
       expectedFund,
       actualFund,
       entries,
