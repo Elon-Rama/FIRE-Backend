@@ -5,10 +5,10 @@
     "description": "Version 1.0",
     "version": "1.0.0"
   },
-  "host": "localhost:5000",
+  "host": "fire-backend-7.onrender.com",
   "basePath": "/",
   "schemes": [
-    "http"
+    "https"
   ],
   "paths": {
     "/": {
@@ -1933,7 +1933,7 @@
     "/api/emergencyFund/addExpenses": {
       "post": {
         "tags": [
-          "Emergency-Fund"
+          "EmergencyFund-api"
         ],
         "description": "",
         "parameters": [
