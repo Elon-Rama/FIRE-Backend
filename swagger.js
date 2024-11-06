@@ -5,9 +5,9 @@ const doc = {
     title: "FIRE-APP",
     description: "Version 1.0"
   },
-  host: "localhost:5000",  
+  host: "fire-backend-8.onrender.com",  
   basePath: "/",
-  schemes: ["http"],  
+  schemes: ["https"],  
 };
 
 const outputFile = "./swagger-output.json";
