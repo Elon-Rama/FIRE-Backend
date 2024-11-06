@@ -39,6 +39,7 @@ exports.create = async (req, res) => {
     };
 
     res.status(201).json({
+      statusCode: 201,
       message: 'Financial plan saved successfully',
       data: {
         monthlyExpenses,
@@ -50,6 +51,9 @@ exports.create = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'An error occurred while saving the financial plan' });
+    res.status(500).json({
+      statusCode: 500,
+      message: 'An error occurred while saving the financial plan'
+    });
   }
 };
