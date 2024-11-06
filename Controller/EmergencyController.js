@@ -133,3 +133,47 @@ exports.getAll = async (req, res) => {
     });
   }
 };
+
+exports.getById = async (req, res) => {
+  //#swagger.tags = ['Emergency-Fund']
+  try {
+    const emergency = await EmergencyFund.findOne({ _id: req.params.emergency_id }); // Match parameter name
+    if (emergency) {
+      res.status(200).json({
+        statusCode: "0",
+        message: "Emergency Id retrieved successfully",
+        data: emergency,
+      });
+    } else {
+      res.status(404).json({
+        message: "Emergency Id not found",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to retrieve emergency data",
+    });
+  }
+};
+
+
+exports.deleteById = async (req, res) => {
+ //#swagger.tags = ['Emergency-Fund']
+  try {
+    const emergency = await EmergencyFund.findOne({ _id: req.params.emergency_id });
+    if (emergency) {
+      await EmergencyFund.deleteOne({_id: req.params.emergency_id });
+      res.status(200).json({
+        message: "emergency data deleted successfully",
+      });
+    } else {
+      res.status(404).json({
+        message: "No emergency data found",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to delete a emergency ",
+    });
+  }
+};
