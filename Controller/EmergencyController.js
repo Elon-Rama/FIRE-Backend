@@ -125,17 +125,25 @@ exports.getAll = async (req, res) => {
   const { userId } = req.query;
 
   try {
-    const user = await User.findById(userId);
-    if (!user) {
+    const emergency = await EmergencyFund.find({ userId });
+
+    if (emergency.length === 0) {
       return res.status(200).json({
         statusCode: "1",
-        message: "User not found",
+        message: "No Expenses found for the provided userId",
       });
     }
-    const expenses = await EmergencyFund.find();
-    res.status(200).json(expenses);
+
+    res.status(200).json({
+      statusCode: "0",
+      message: "Expenses retrieved successfully",
+      data: emergency,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching expenses", error });
+    res.status(500).json({
+      statusCode: "1",
+      message: error.message,
+    });
   }
 };
 
