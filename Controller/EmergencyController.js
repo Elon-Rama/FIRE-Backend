@@ -46,7 +46,7 @@ exports.upsert = async (req, res) => {
 
       entries.push(entry);
     }
-
+    const totalAmount = entries.reduce((sum, entry) => sum + (entry.amount || 0), 0);
     const actualFund = initialEntry ? [{ Entry: entries }] : [];
 
     if (emergencyId) {
