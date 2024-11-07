@@ -66,7 +66,7 @@ exports.upsert = async (req, res) => {
           amount: entries[0].amount,
           rateofInterest: entries[0].rateofInterest,
           savingsMode: entries[0].savingsMode,
-          totalAmount:entries[0].totalAmount,
+         
         });
       }
 
@@ -82,7 +82,7 @@ exports.upsert = async (req, res) => {
       );
 
       await updatedFund.save();
-
+     
       return res.status(201).json({
         statusCode: "0",
         message: "Emergency Fund updated successfully",
@@ -100,7 +100,7 @@ exports.upsert = async (req, res) => {
         actualFund,
         totalAmount,
       });
-      const totalAmount = entries.reduce((sum, entry) => sum + (entry.amount || 0), 0);
+     
       await emergencyFund.save();
 
       return res.status(201).json({
