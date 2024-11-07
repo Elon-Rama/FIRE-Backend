@@ -4,8 +4,8 @@ const emergencyFund = require('../../Model/emergencyFundModel')
 const User = require('../../Model/emailModel');
 
 exports.create = async (req, res) => {
-  const { monthlyExpenses, emergencyFundMonths, monthlySavings } = req.body;
-  const userId = req.user.userId;
+  const {userId, monthlyExpenses, emergencyFundMonths, monthlySavings } = req.body;
+
 
   try {
     // Validate input
@@ -27,7 +27,7 @@ exports.create = async (req, res) => {
       monthlySavings,
       totalEmergencyFund,
     });
-
+    console.log('Saving document:', userSavings);
     await userSavings.save();
 
     const now = new Date();

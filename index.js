@@ -53,3 +53,13 @@ app.listen(port, () => {
 });
 
 module.exports = app;
+
+
+//USER= ramdevcse25@gmail.com
+//APP_PASSWORD= hwpo chmv bvoz fepm
+
+//JWT_SECRET=elon
+
+
+//Mongo=mongodb+srv://subisamca:XHVAKmigjIh3TXhJ@cluster0.gvelj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+//SESSION_SECRET=12345
