@@ -110,7 +110,7 @@ const emergencySchema = new mongoose.Schema({
             enum: ["F.D", "R.D", "M.F liquid", "M.F debt"], 
             required: false, 
           },
-          type: { // New field added to track entry type
+          type: { 
             type: String,
             enum: ["savings", "withdraw"],
             required: true,

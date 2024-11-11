@@ -1,13 +1,13 @@
-// const EmergencyFund = require("../Model/EmergencyModel");
-// const User = require("../Model/emailModel");
+const EmergencyFund = require("../Model/EmergencyModel");
+const User = require("../Model/emailModel");
 
-// const getCurrentDateTime = () => {
-//   const now = new Date();
-//   return {
-//     date: now.toISOString().split("T")[0],
-//     time: now.toTimeString().split(" ")[0],
-//   };
-// };
+const getCurrentDateTime = () => {
+  const now = new Date();
+  return {
+    date: now.toISOString().split("T")[0],
+    time: now.toTimeString().split(" ")[0],
+  };
+};
 
 // exports.upsert = async (req, res) => {
 //   //#swagger.tags = ['Emergency-Fund']
@@ -120,17 +120,6 @@
 //   }
 // };
 
-const EmergencyFund = require("../Model/EmergencyModel");
-const User = require("../Model/emailModel");
-
-const getCurrentDateTime = () => {
-  const now = new Date();
-  return {
-    date: now.toISOString().split("T")[0],
-    time: now.toTimeString().split(" ")[0],
-  };
-};
-
 exports.upsert = async (req, res) => {
   //#swagger.tags = ['Emergency-Fund']
   const {
@@ -158,14 +147,19 @@ exports.upsert = async (req, res) => {
       const { amount, rateofInterest, savingsMode, type } = initialEntry;
       const { date, time } = getCurrentDateTime();
 
+      
       const entry = {
         date,
         time,
         amount,
-        rateofInterest,
-        savingsMode,
-        type, // Add type field here for 'savings' or 'withdraw'
+        type, 
       };
+
+     
+      if (type === "savings") {
+        entry.rateofInterest = rateofInterest;
+        entry.savingsMode = savingsMode;
+      }
 
       entries.push(entry);
     }
@@ -189,7 +183,7 @@ exports.upsert = async (req, res) => {
         });
       }
 
-      // Ensure actualFund array exists and has an entry to push to
+     
       if (!updatedFund.actualFund || updatedFund.actualFund.length === 0) {
         updatedFund.actualFund = [{ Entry: [] }];
       }
@@ -201,7 +195,7 @@ exports.upsert = async (req, res) => {
           amount: entries[0].amount,
           rateofInterest: entries[0].rateofInterest,
           savingsMode: entries[0].savingsMode,
-          type: entries[0].type, // Add type field here for 'savings' or 'withdraw'
+          type: entries[0].type, 
         });
       }
 
@@ -210,7 +204,7 @@ exports.upsert = async (req, res) => {
       updatedFund.savingsperMonth = savingsperMonth;
       updatedFund.expectedFund = expectedFund;
 
-      // Recalculate totalAmount by considering the type (savings or withdraw)
+      
       updatedFund.totalAmount = updatedFund.actualFund[0].Entry.reduce(
         (sum, entry) => {
           return entry.type === "savings"
@@ -220,7 +214,7 @@ exports.upsert = async (req, res) => {
         0
       );
 
-      updatedFund.totalAmount = Math.max(0, updatedFund.totalAmount); // Ensure totalAmount is not below zero
+      updatedFund.totalAmount = Math.max(0, updatedFund.totalAmount); 
 
       await updatedFund.save();
 
@@ -255,6 +249,7 @@ exports.upsert = async (req, res) => {
     });
   }
 };
+
 
 exports.getAll = async (req, res) => {
   //#swagger.tags = ['Emergency-Fund']
