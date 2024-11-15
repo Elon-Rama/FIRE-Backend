@@ -2,7 +2,6 @@ const User = require("../../Model/emailModel");
 const ExpensesMaster = require("../../Model/masterExpensesModel");
 const ExpensesAllocation = require("../../Model/ExpensesAllocation");
 const ChildExpenses = require("../../Model/ChildExpensesModel");
-// const moment = require("moment");
 const moment = require("moment-timezone");
 
 exports.upsert = async (req, res) => {
@@ -205,113 +204,10 @@ exports.copyPreviousMonthData = async (req, res) => {
   }
 };
 
-// exports.postSubCategoryValues = async (req, res) => {
-//   //#swagger.tags = ['Expenses Allocation']
-//   try {
-//     const { userId, month, year, selectedMaster, selectedCategory, amount } =
-//       req.body;
-
-//     const user = await User.findById(userId);
-//     if (!user) {
-//       return res.status(404).json({
-//         statusCode: "1",
-//         message: "User not found",
-//       });
-//     }
-
-//     const expenses = await ExpensesAllocation.findOne({ userId, month, year });
-//     if (!expenses) {
-//       return res.status(404).json({
-//         statusCode: "1",
-//         message: "Expenses record not found for the specified month and year",
-//       });
-//     }
-
-//     const master = expenses.titles.find(
-//       (title) => title.title === selectedMaster
-//     );
-//     const currentDate = moment().format("YYYY-MM-DD");
-//     const currentTime = moment().format("HH:mm:ss");
-
-//     if (!master) {
-//       const newMaster = {
-//         title: selectedMaster,
-//         active: true,
-//         category: [
-//           {
-//             title: selectedCategory,
-//             amounts: [
-//               {
-//                 amount: parseFloat(amount),
-//                 Date: currentDate,
-//                 time: currentTime,
-//               },
-//             ],
-//           },
-//         ],
-//       };
-//       expenses.titles.push(newMaster);
-//       await expenses.save();
-//     } else {
-//       const category = master.category.find(
-//         (cat) => cat.title === selectedCategory
-//       );
-//       if (category) {
-//         category.amounts.push({
-//           amount: parseFloat(amount),
-//           Date: currentDate,
-//           time: currentTime,
-//         });
-//       } else {
-//         master.category.push({
-//           title: selectedCategory,
-//           amounts: [
-//             {
-//               amount: parseFloat(amount),
-//               Date: currentDate,
-//               time: currentTime,
-//             },
-//           ],
-//         });
-//       }
-//       await expenses.save();
-//     }
-
-//     const categoryResponse = master.category.map((cat) => {
-//       const totalAmount = cat.amounts.reduce(
-//         (sum, entry) => sum + entry.amount,
-//         0
-//       );
-//       return {
-//         title: cat.title,
-//         amounts: cat.amounts,
-//         totalAmount: totalAmount,
-//       };
-//     });
-
-//     const categoryTotal = categoryResponse.reduce(
-//       (sum, cat) => sum + cat.totalAmount,
-//       0
-//     );
-
-//     return res.status(201).json({
-//       statusCode: "0",
-//       message: "Subcategory amount updated successfully",
-//       category: categoryResponse,
-//       categoryTotal: categoryTotal,
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     return res.status(500).json({
-//       statusCode: "1",
-//       message: "Internal Server Error",
-//     });
-//   }
-// };
 exports.updateExpenseAmount = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']
   try {
-    const { userId, entryId, amount } = req.body; 
+    const { userId, entryId, amount } = req.body;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -329,14 +225,15 @@ exports.updateExpenseAmount = async (req, res) => {
       });
     }
 
-    // Find the entry by entryId
     let foundEntry = null;
     for (const title of expenses.titles) {
       for (const category of title.category) {
-        foundEntry = category.amounts.find(entry => entry._id.toString() === entryId);
+        foundEntry = category.amounts.find(
+          (entry) => entry._id.toString() === entryId
+        );
         if (foundEntry) break;
       }
-      if (foundEntry) break; // Exit outer loop if found
+      if (foundEntry) break;
     }
 
     if (!foundEntry) {
@@ -346,17 +243,16 @@ exports.updateExpenseAmount = async (req, res) => {
       });
     }
 
-    // Update the amount
-    foundEntry.amount = parseFloat(amount); // Update the amount
-    foundEntry.Date = moment().tz("Asia/Kolkata").format("YYYY-MM-DD"); // Optionally update date
-    foundEntry.time = moment().tz("Asia/Kolkata").format("HH:mm:ss"); // Optionally update time
+    foundEntry.amount = parseFloat(amount);
+    foundEntry.Date = moment().tz("Asia/Kolkata").format("YYYY-MM-DD");
+    foundEntry.time = moment().tz("Asia/Kolkata").format("HH:mm:ss");
 
-    await expenses.save(); // Save changes
+    await expenses.save();
 
     return res.status(200).json({
       statusCode: "0",
       message: "Expense amount updated successfully",
-      updatedEntry: foundEntry, // Return the updated entry
+      updatedEntry: foundEntry,
     });
   } catch (err) {
     console.error(err);
@@ -392,7 +288,7 @@ exports.postSubCategoryValues = async (req, res) => {
     const master = expenses.titles.find(
       (title) => title.title === selectedMaster
     );
-    // Use Indian Standard Time (IST) for date and time formatting
+
     const timeZone = "Asia/Kolkata";
     const currentDate = moment().tz(timeZone).format("YYYY-MM-DD");
     const currentTime = moment().tz(timeZone).format("HH:mm:ss");
@@ -563,8 +459,6 @@ exports.getAll = async (req, res) => {
     });
   }
 };
-
-
 
 exports.getById = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']

@@ -8,7 +8,7 @@ const ExpensesMasterSchema = new mongoose.Schema({
     },
     title: {
         type: String,
-        required: true,
+        required: false,
     },
     active: {
         type: Boolean,

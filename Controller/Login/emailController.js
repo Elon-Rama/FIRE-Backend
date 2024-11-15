@@ -133,6 +133,7 @@ exports.verifyOTP = async (req, res) => {
     if (!existingExpenses) {
       const defaultExpenses = [
         {
+          
           title: "Housing",
           active: true,
           userId: user._id,

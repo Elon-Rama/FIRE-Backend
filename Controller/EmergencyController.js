@@ -9,117 +9,6 @@ const getCurrentDateTime = () => {
   };
 };
 
-// exports.upsert = async (req, res) => {
-//   //#swagger.tags = ['Emergency-Fund']
-//   const {
-//     userId,
-//     monthlyExpenses,
-//     monthsNeed,
-//     savingsperMonth,
-//     initialEntry,
-//     emergencyId,
-//   } = req.body;
-
-//   try {
-//     const user = await User.findById(userId);
-//     if (!user) {
-//       return res.status(200).json({
-//         statusCode: "1",
-//         message: "User not found",
-//       });
-//     }
-
-//     const expectedFund = monthlyExpenses * monthsNeed;
-//     const entries = [];
-
-//     if (initialEntry) {
-//       const { amount, rateofInterest, savingsMode } = initialEntry;
-//       const { date, time } = getCurrentDateTime();
-
-//       const entry = {
-//         date,
-//         time,
-//         amount,
-//         rateofInterest,
-//         savingsMode,
-//       };
-
-//       entries.push(entry);
-//     }
-
-//     const totalAmount = entries.reduce((sum, entry) => sum + (entry.amount || 0), 0);
-//     const actualFund = initialEntry ? [{ Entry: entries }] : [];
-
-//     if (emergencyId) {
-//       const updatedFund = await EmergencyFund.findById(emergencyId);
-
-//       if (!updatedFund) {
-//         return res.status(200).json({
-//           statusCode: "1",
-//           message: "Emergency Fund not found",
-//         });
-//       }
-
-//       // Ensure actualFund array exists and has an entry to push to
-//       if (!updatedFund.actualFund || updatedFund.actualFund.length === 0) {
-//         updatedFund.actualFund = [{ Entry: [] }];
-//       }
-
-//       if (initialEntry) {
-//         updatedFund.actualFund[0].Entry.push({
-//           date: entries[0].date,
-//           time: entries[0].time,
-//           amount: entries[0].amount,
-//           rateofInterest: entries[0].rateofInterest,
-//           savingsMode: entries[0].savingsMode,
-//         });
-//       }
-
-//       updatedFund.monthlyExpenses = monthlyExpenses;
-//       updatedFund.monthsNeed = monthsNeed;
-//       updatedFund.savingsperMonth = savingsperMonth;
-//       updatedFund.expectedFund = expectedFund;
-
-//       // Recalculate totalAmount by summing all 'amount' values in actualFund entries
-//       updatedFund.totalAmount = updatedFund.actualFund[0].Entry.reduce(
-//         (sum, entry) => sum + (entry.amount || 0),
-//         0
-//       );
-
-//       await updatedFund.save();
-
-//       return res.status(201).json({
-//         statusCode: "0",
-//         message: "Emergency Fund updated successfully",
-//         data: updatedFund,
-//       });
-//     } else {
-//       const emergencyFund = new EmergencyFund({
-//         userId,
-//         monthlyExpenses,
-//         monthsNeed,
-//         savingsperMonth,
-//         expectedFund,
-//         actualFund,
-//         totalAmount,
-//       });
-
-//       await emergencyFund.save();
-
-//       return res.status(201).json({
-//         statusCode: "0",
-//         message: "Emergency Fund created successfully",
-//         data: emergencyFund,
-//       });
-//     }
-//   } catch (error) {
-//     return res.status(500).json({
-//       statusCode: "1",
-//       message: error.message,
-//     });
-//   }
-// };
-
 exports.upsert = async (req, res) => {
   //#swagger.tags = ['Emergency-Fund']
   const {
@@ -147,15 +36,13 @@ exports.upsert = async (req, res) => {
       const { amount, rateofInterest, savingsMode, type } = initialEntry;
       const { date, time } = getCurrentDateTime();
 
-      
       const entry = {
         date,
         time,
         amount,
-        type, 
+        type,
       };
 
-     
       if (type === "savings") {
         entry.rateofInterest = rateofInterest;
         entry.savingsMode = savingsMode;
@@ -183,7 +70,6 @@ exports.upsert = async (req, res) => {
         });
       }
 
-     
       if (!updatedFund.actualFund || updatedFund.actualFund.length === 0) {
         updatedFund.actualFund = [{ Entry: [] }];
       }
@@ -195,7 +81,7 @@ exports.upsert = async (req, res) => {
           amount: entries[0].amount,
           rateofInterest: entries[0].rateofInterest,
           savingsMode: entries[0].savingsMode,
-          type: entries[0].type, 
+          type: entries[0].type,
         });
       }
 
@@ -204,7 +90,6 @@ exports.upsert = async (req, res) => {
       updatedFund.savingsperMonth = savingsperMonth;
       updatedFund.expectedFund = expectedFund;
 
-      
       updatedFund.totalAmount = updatedFund.actualFund[0].Entry.reduce(
         (sum, entry) => {
           return entry.type === "savings"
@@ -214,7 +99,7 @@ exports.upsert = async (req, res) => {
         0
       );
 
-      updatedFund.totalAmount = Math.max(0, updatedFund.totalAmount); 
+      updatedFund.totalAmount = Math.max(0, updatedFund.totalAmount);
 
       await updatedFund.save();
 
@@ -250,7 +135,6 @@ exports.upsert = async (req, res) => {
   }
 };
 
-
 exports.getAll = async (req, res) => {
   //#swagger.tags = ['Emergency-Fund']
   const { userId } = req.query;
@@ -281,7 +165,9 @@ exports.getAll = async (req, res) => {
 exports.getById = async (req, res) => {
   //#swagger.tags = ['Emergency-Fund']
   try {
-    const emergency = await EmergencyFund.findOne({ _id: req.params.emergency_id }); 
+    const emergency = await EmergencyFund.findOne({
+      _id: req.params.emergency_id,
+    });
     if (emergency) {
       res.status(200).json({
         statusCode: "0",
@@ -300,13 +186,14 @@ exports.getById = async (req, res) => {
   }
 };
 
-
 exports.deleteById = async (req, res) => {
- //#swagger.tags = ['Emergency-Fund']
+  //#swagger.tags = ['Emergency-Fund']
   try {
-    const emergency = await EmergencyFund.findOne({ _id: req.params.emergency_id });
+    const emergency = await EmergencyFund.findOne({
+      _id: req.params.emergency_id,
+    });
     if (emergency) {
-      await EmergencyFund.deleteOne({_id: req.params.emergency_id });
+      await EmergencyFund.deleteOne({ _id: req.params.emergency_id });
       res.status(200).json({
         message: "emergency data deleted successfully",
       });
