@@ -2058,10 +2058,15 @@
     "/api/debt/create": {
       "post": {
         "tags": [
-          "Emergency-Fund"
+          "Debt-clearance"
         ],
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -2085,6 +2090,9 @@
           "201": {
             "description": "Created"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -2094,10 +2102,15 @@
     "/api/debt/all": {
       "get": {
         "tags": [
-          "Emergency-Fund"
+          "Debt-clearance"
         ],
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "userId",
             "in": "query",
@@ -2110,6 +2123,9 @@
           },
           "400": {
             "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
           },
           "404": {
             "description": "Not Found"

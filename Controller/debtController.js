@@ -16,11 +16,10 @@ const calculateLoanData = (amount, rateOfInterest, EMI) => {
 };
 
 exports.createDebt = async (req, res) => {
-     //#swagger.tags = ['Emergency-Fund']
+  //#swagger.tags = ['Debt-clearance']
   try {
     const { userId, source } = req.body;
 
-    // Check if the user exists in the User collection
     const user = await User.findById(userId);
     if (!user) {
       return res.status(200).json({
@@ -29,12 +28,10 @@ exports.createDebt = async (req, res) => {
       });
     }
 
-    // Check if there's existing debt data for the user
     const existingDebt = await Debt.findOne({ userId });
 
     let totalMonths = 0;
 
-    // Process the new loans
     const processedLoans = source.map((loan) => {
       const {
         debtAmount,
@@ -58,10 +55,8 @@ exports.createDebt = async (req, res) => {
     });
 
     if (existingDebt) {
-      // Update the existing document with new loans
       existingDebt.source = [...existingDebt.source, ...processedLoans];
 
-      // Recalculate debt amount and remaining balance
       const updatedDebtAmount = existingDebt.source.reduce(
         (sum, loan) => sum + parseFloat(loan.debtAmount),
         0
@@ -76,7 +71,6 @@ exports.createDebt = async (req, res) => {
       existingDebt.RemainingBalance = updatedRemainingBalance.toFixed(2);
       await existingDebt.save();
 
-      // Calculate consolidated values for the response
       const totalDebt = existingDebt.source.reduce(
         (sum, loan) => sum + parseFloat(loan.debtAmount),
         0
@@ -108,11 +102,9 @@ exports.createDebt = async (req, res) => {
         },
       });
     } else {
-      // Create a new document if no existing debt data is found
       const debt = new Debt({ userId, source: processedLoans });
       const savedDebt = await debt.save();
 
-      // Calculate consolidated values for the response
       const totalDebt = processedLoans.reduce(
         (sum, loan) => sum + parseFloat(loan.debtAmount),
         0
@@ -144,7 +136,7 @@ exports.createDebt = async (req, res) => {
 };
 
 exports.getAllDebts = async (req, res) => {
-     //#swagger.tags = ['Emergency-Fund']
+  //#swagger.tags = ['Debt-clearance']
   try {
     const { userId } = req.query;
 

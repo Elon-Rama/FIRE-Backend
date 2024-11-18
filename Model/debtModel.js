@@ -3,16 +3,16 @@ const mongoose = require('mongoose');
 const LoanSchema = new mongoose.Schema({
     loanName: { type: String, required: true },
     amount: { type: Number, required: true },
-    RateofInterest: { type: Number, required: true }, // Percentage
+    RateofInterest: { type: Number, required: true }, 
     EMI: { type: Number, required: true },
-    debtAmount: { type: Number }, // Calculated (principal + interest)
-    yearstorepaid: { type: String }, // Calculated repayment time
-    RemainingBalance: { type: Number } // Remaining balance to be repaid
+    debtAmount: { type: Number },
+    yearstorepaid: { type: String }, 
+    RemainingBalance: { type: Number } 
 });
 
 const DebtSchema = new mongoose.Schema({
     userId: { type: String, required: true },
-    source: [LoanSchema] // Array of loans
+    source: [LoanSchema]
 });
 
 module.exports = mongoose.model('Debt', DebtSchema);

@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Debt = require('../../Controller/debtController');
+const { verifyToken } = require("../../Middleware/authMiddleware");
 
-// Route to create a new debt record
-router.post('/create', Debt.createDebt);
-router.get('/all',Debt.getAllDebts);
+
+router.post('/create', verifyToken,Debt.createDebt);
+router.get('/all',verifyToken,Debt.getAllDebts);
 
 module.exports = router;
