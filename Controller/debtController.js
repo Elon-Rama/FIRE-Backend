@@ -317,20 +317,25 @@ exports.getAllDebts = async (req, res) => {
       return sum + (loan.principleAmount * loan.interest) / 100;
     }, 0);
     const totalPaid = debtClearance.source.reduce((sum, loan) => sum + loan.currentPaid, 0);
-    const totalOwed = totalDebt + totalInterest - totalPaid;
+    // const totalOwed = totalDebt + totalInterest - totalPaid;
+    const totalOwed = totalDebt + totalInterest;
 
     return res.status(200).json({
       statusCode: "0",
       message: "Debt clearance records fetched successfully.",
       userId: debtClearance.userId,
       debtId: debtClearance._id,
-      data: {
-        source: debtClearance.source,
-        TotalDebt: totalDebt,
-        TotalInterest: totalInterest,
-        TotalOwed: totalOwed,
-        totalPaid: totalPaid,
-      },
+      data: [
+        {
+          source: debtClearance.source,
+        },
+        {
+          TotalDebt: totalDebt,
+          TotalInterest: totalInterest,
+          TotalOwed: totalOwed,
+          totalPaid: totalPaid,
+        },
+      ],
     });
   } catch (error) {
     console.error("Error fetching debt clearance records:", error);
