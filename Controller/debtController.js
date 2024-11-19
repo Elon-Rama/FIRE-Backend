@@ -141,7 +141,7 @@ exports.getAllDebts = async (req, res) => {
     res.status(200).json({
       statusCode: "0",
       message: "Data retrieved successfully",
-      data: formattedDebt,
+      data: [{formattedDebt}],
     });
   } catch (error) {
     console.error("Error fetching debt clearance records:", error);
