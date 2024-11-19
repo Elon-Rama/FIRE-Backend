@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const Debt = require('../../Controller/debtController');
+const DebtClearance = require('../../Controller/debtController');
 const { verifyToken } = require("../../Middleware/authMiddleware");
 
 
-router.post('/create', verifyToken,Debt.createDebt);
-router.get('/all',verifyToken,Debt.getAllDebts);
+router.post('/create',verifyToken, DebtClearance.createDebt);
+router.get('/all',verifyToken,DebtClearance.getAllDebts);
 
 module.exports = router;
