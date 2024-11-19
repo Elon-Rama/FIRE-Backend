@@ -75,120 +75,156 @@ exports.createDebt = async (req, res) => {
   }
 };
 
-exports.getAllDebts = async (req, res) => {
-  //#swagger.tags = ['Debt-Clearance']
-  try {
-    const { userId } = req.query;
+// exports.getAllDebts = async (req, res) => {
+//   //#swagger.tags = ['Debt-Clearance']
+//   try {
+//     const { userId } = req.query;
 
+//     if (!userId) {
+//       return res.status(200).json({
+//         statusCode: "1",
+//         message: "Invalid request. Please provide a valid userId.",
+//       });
+//     }
+
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return res.status(200).json({
+//         statusCode: "1",
+//         message: "User not found. Please provide a valid userId.",
+//       });
+//     }
+
+//     const debtClearance = await DebtClearance.findOne({ userId });
+
+//     if (!debtClearance) {
+//       return res.status(200).json({
+//         statusCode: "1",
+//         message: "No debt clearance records found for the user.",
+//       });
+//     }
+
+//     let totalDebt = 0;
+//     let totalInterest = 0;
+//     let totalPaid = 0;
+
+//     debtClearance.source.forEach((loan) => {
+//       const principal = loan.principleAmount;
+//       const interestRate = loan.interest / 100;
+//       const emi = loan.emi;
+//       const currentPaid = loan.currentPaid;
+
+//       totalPaid += currentPaid;
+
+//       const loanInterest = principal * interestRate;
+
+//       totalDebt += principal;
+
+//       totalInterest += loanInterest;
+//     });
+
+//     const totalOwed = totalDebt + totalInterest;
+
+//     return res.status(200).json({
+//       statusCode: "0",
+//       message: "Debt clearance records fetched successfully.",
+//       userId: debtClearance.userId,
+//       debtId: debtClearance._id,
+//       data: [
+//         {
+//           source: debtClearance.source,
+//         },
+//         {
+//           TotalDebt: totalDebt,
+//           TotalInterest: totalInterest,
+//           TotalOwed: totalOwed,
+//           totalPaid: totalPaid,
+//         },
+//       ],
+//     });
+//   } catch (error) {
+//     console.error("Error fetching debt clearance records:", error);
+//     res.status(500).json({
+//       statusCode: "1",
+//       message: "Internal Server Error",
+//     });
+//   }
+// };
+
+exports.getAllDebts = async (req, res) => {
+  try {
+    const { userId } = req.query; // Get userId from request params
+
+    // Validate userId
     if (!userId) {
-      return res.status(200).json({
+      return res.status(400).json({
         statusCode: "1",
         message: "Invalid request. Please provide a valid userId.",
       });
     }
 
+    // Check if user exists in the database
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(200).json({
+      return res.status(404).json({
         statusCode: "1",
         message: "User not found. Please provide a valid userId.",
       });
     }
 
-    const debtClearance = await DebtClearance.findOne({ userId });
-
-    if (!debtClearance) {
-      return res.status(200).json({
+    // Fetch debts associated with the user
+    const debts = await DebtClearance.find({ userId }).populate("userId");
+    if (!debts || debts.length === 0) {
+      return res.status(404).json({
         statusCode: "1",
         message: "No debt clearance records found for the user.",
       });
     }
 
-    let totalDebt = 0;
-    let totalInterest = 0;
-    let totalPaid = 0;
+    // Format debts
+    const formattedDebts = debts.map((debt) => {
+      // Calculate totals for each debt record
+      const totalPrinciple = debt.source.reduce(
+        (sum, item) => sum + (item.principleAmount || 0),
+        0
+      );
 
-    debtClearance.source.forEach((loan) => {
-      const principal = loan.principleAmount;
-      const interestRate = loan.interest / 100;
-      const emi = loan.emi;
-      const currentPaid = loan.currentPaid;
+      let totalInterestPayment = 0;
+      let currentPaid = 0;
 
-      totalPaid += currentPaid;
+      debt.source.forEach((item) => {
+        const interest =
+          ((item.principleAmount || 0) * (item.interest || 0) * (item.loanTenure || 0)) / 100;
+        totalInterestPayment += interest;
+        currentPaid += item.currentPaid || 0;
+      });
 
-      const loanInterest = principal * interestRate;
+      const totalOwed = totalPrinciple + totalInterestPayment;
 
-      totalDebt += principal;
-
-      totalInterest += loanInterest;
+      return {
+        userId: debt.userId._id,
+        source: debt.source,
+        totalDebt: totalPrinciple,
+        totalInterestPayment,
+        currentPaid,
+        totalOwed,
+      };
     });
 
-    const totalOwed = totalDebt + totalInterest;
-
-    return res.status(200).json({
+    // Respond with formatted data
+    res.status(200).json({
       statusCode: "0",
-      message: "Debt clearance records fetched successfully.",
-      userId: debtClearance.userId,
-      debtId: debtClearance._id,
-      data: [
-        {
-          source: debtClearance.source,
-        },
-        {
-          TotalDebt: totalDebt,
-          TotalInterest: totalInterest,
-          TotalOwed: totalOwed,
-          totalPaid: totalPaid,
-        },
-      ],
+      message: "Data retrieved successfully",
+      data: formattedDebts,
     });
   } catch (error) {
     console.error("Error fetching debt clearance records:", error);
     res.status(500).json({
       statusCode: "1",
-      message: "Internal Server Error",
+      message: "Failed to retrieve debts due to a server error.",
     });
   }
 };
-
-// exports.getAllDebts = async (req, res) => {
-//   try {
-//       const debts = await DebtClearance.find().populate('userId'); 
-
-//       const formattedDebts = debts.map((debt) => {
-//           const totalPrinciple = debt.source.reduce((sum, item) => sum + item.principleAmount, 0);
-
-//           let totalInterestPayment = 0;
-//           let currentPaid = 0;
-
-//           debt.source.forEach((item) => {
-//               const interest = (item.principleAmount * item.interest * item.loanTenure) / 100;
-//               totalInterestPayment += interest;
-//               currentPaid += item.currentPaid; 
-//           });
-
-//           const totalOwed = totalPrinciple + totalInterestPayment;
-
-//           return {
-//               userId: debt.userId._id,
-//               source: debt.source,
-//               totalDebt: totalPrinciple,
-//               totalInterestPayment, // Calculated using Simple Interest
-//               currentPaid, // Total payments made so far
-//               totalOwed, // Total Debt + Total Interest
-//           };
-//       });
-
-//       res.status(200).json({
-//           statusCode: '0',
-//           message: 'Data retrieved successfully',
-//           data: formattedDebts,
-//       });
-//   } catch (error) {
-//       console.error(error);
-//       res.status(500).json({ statusCode: '1', message: 'Failed to retrieve debts' });
-//   }
-// };
 
 
 
