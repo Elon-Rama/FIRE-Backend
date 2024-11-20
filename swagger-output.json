@@ -2101,6 +2101,9 @@
     },
     "/api/debt/all": {
       "get": {
+        "tags": [
+          "Debt-Clearance"
+        ],
         "description": "",
         "parameters": [
           {

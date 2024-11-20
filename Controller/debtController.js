@@ -152,10 +152,10 @@ exports.createDebt = async (req, res) => {
 // };
 
 exports.getAllDebts = async (req, res) => {
+   //#swagger.tags = ['Debt-Clearance']
   try {
-    const { userId } = req.query; // Get userId from request params
+    const { userId } = req.query;
 
-    // Validate userId
     if (!userId) {
       return res.status(400).json({
         statusCode: "1",
@@ -163,7 +163,6 @@ exports.getAllDebts = async (req, res) => {
       });
     }
 
-    // Check if user exists in the database
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
@@ -172,7 +171,6 @@ exports.getAllDebts = async (req, res) => {
       });
     }
 
-    // Fetch debts associated with the user
     const debts = await DebtClearance.find({ userId }).populate("userId");
     if (!debts || debts.length === 0) {
       return res.status(404).json({
@@ -181,9 +179,7 @@ exports.getAllDebts = async (req, res) => {
       });
     }
 
-    // Format debts
     const formattedDebts = debts.map((debt) => {
-      // Calculate totals for each debt record
       const totalPrinciple = debt.source.reduce(
         (sum, item) => sum + (item.principleAmount || 0),
         0
@@ -194,7 +190,10 @@ exports.getAllDebts = async (req, res) => {
 
       debt.source.forEach((item) => {
         const interest =
-          ((item.principleAmount || 0) * (item.interest || 0) * (item.loanTenure || 0)) / 100;
+          ((item.principleAmount || 0) *
+            (item.interest || 0) *
+            (item.loanTenure || 0)) /
+          100;
         totalInterestPayment += interest;
         currentPaid += item.currentPaid || 0;
       });
@@ -211,7 +210,6 @@ exports.getAllDebts = async (req, res) => {
       };
     });
 
-    // Respond with formatted data
     res.status(200).json({
       statusCode: "0",
       message: "Data retrieved successfully",
@@ -225,6 +223,3 @@ exports.getAllDebts = async (req, res) => {
     });
   }
 };
-
-
-
