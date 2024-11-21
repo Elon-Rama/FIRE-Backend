@@ -383,8 +383,9 @@ exports.payEMI = async (req, res) => {
     loan.outstandingBalance -= principalPaid;
 
     // Add payment record to paymentHistory
+    const currentMonth = moment().format("YYYY-MM");
     loan.paymentHistory.push({
-      month: moment().format("YYYY-MM"), // Current month
+      month: currentMonth,
       emiPaid,
       principalPaid: Math.round(principalPaid),
       interestPaid: Math.round(interestForTheMonth),
@@ -402,6 +403,7 @@ exports.payEMI = async (req, res) => {
         principalPaid: Math.round(principalPaid),
         currentPaid: loan.currentPaid,
         outstandingBalance: Math.round(loan.outstandingBalance),
+        month: currentMonth, // Add the current month to the response
       },
     });
   } catch (error) {
@@ -409,3 +411,5 @@ exports.payEMI = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error." });
   }
 };
+
+
