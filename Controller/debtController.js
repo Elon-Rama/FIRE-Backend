@@ -174,7 +174,8 @@ exports.createDebt = async (req, res) => {
     if (!userId || !source || !Array.isArray(source)) {
       return res.status(400).json({
         statusCode: "1",
-        message: "Invalid request data. Please provide a valid userId and source array.",
+        message:
+          "Invalid request data. Please provide a valid userId and source array.",
       });
     }
 
@@ -190,12 +191,39 @@ exports.createDebt = async (req, res) => {
     const currentDate = currentDateTime.format("YYYY-MM-DD");
     const currentTime = currentDateTime.format("HH:mm:ss");
 
+    // const enrichedSource = source.map((loan) => {
+    //   const monthlyInterestRate = loan.interest / 100 / 12;
+    //   const totalMonths = loan.loanTenure * 12;
+
+    //   const emi =
+    //     (loan.principleAmount *
+    //       monthlyInterestRate *
+    //       Math.pow(1 + monthlyInterestRate, totalMonths)) /
+    //     (Math.pow(1 + monthlyInterestRate, totalMonths) - 1);
+
+    //   const totalPayment = emi * totalMonths;
+    //   const totalInterestPayment = totalPayment - loan.principleAmount;
+
+    //   const outstandingBalance = totalPayment - loan.currentPaid;
+
+    //   return {
+    //     ...loan,
+    //     emi: Math.round(emi),
+    //     totalPayment: Math.round(totalPayment),
+    //     totalInterestPayment: Math.round(totalInterestPayment),
+    //     outstandingBalance: Math.round(outstandingBalance), // Add this field
+    //     date: currentDate,
+    //     time: currentTime,
+    //   };
+    // });
     const enrichedSource = source.map((loan) => {
       const monthlyInterestRate = loan.interest / 100 / 12;
       const totalMonths = loan.loanTenure * 12;
     
       const emi =
-        (loan.principleAmount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, totalMonths)) /
+        (loan.principleAmount *
+          monthlyInterestRate *
+          Math.pow(1 + monthlyInterestRate, totalMonths)) /
         (Math.pow(1 + monthlyInterestRate, totalMonths) - 1);
     
       const totalPayment = emi * totalMonths;
@@ -208,13 +236,13 @@ exports.createDebt = async (req, res) => {
         emi: Math.round(emi),
         totalPayment: Math.round(totalPayment),
         totalInterestPayment: Math.round(totalInterestPayment),
-        outstandingBalance: Math.round(outstandingBalance), // Add this field
+        outstandingBalance: Math.round(outstandingBalance),
         date: currentDate,
         time: currentTime,
+        paymentHistory: [], // Initialize paymentHistory as an empty array
       };
     });
     
-
     const existingDebt = await DebtClearance.findOne({ userId });
 
     if (existingDebt) {
@@ -256,7 +284,6 @@ exports.createDebt = async (req, res) => {
     });
   }
 };
-
 
 exports.getAllDebts = async (req, res) => {
   //#swagger.tags = ['Debt-Clearance']
@@ -304,15 +331,17 @@ exports.getAllDebts = async (req, res) => {
       message: "Debt clearance records fetched successfully.",
       userId: debtClearance.userId,
       debtId: debtClearance._id,
-      data: [{
-        source: debtClearance.source,
-        summary: {
-          TotalDebt: Math.round(totalDebt),
-          TotalInterest: Math.round(totalInterest),
-          TotalPaid: Math.round(totalPaid),
-          TotalOwed: Math.round(totalOwed),
+      data: [
+        {
+          source: debtClearance.source,
+          summary: {
+            TotalDebt: Math.round(totalDebt),
+            TotalInterest: Math.round(totalInterest),
+            TotalPaid: Math.round(totalPaid),
+            TotalOwed: Math.round(totalOwed),
+          },
         },
-      },]
+      ],
     });
   } catch (error) {
     console.error("Error fetching debt clearance records:", error);
@@ -320,5 +349,63 @@ exports.getAllDebts = async (req, res) => {
       statusCode: "1",
       message: "Internal Server Error",
     });
+  }
+};
+
+exports.payEMI = async (req, res) => {
+  //#swagger.tags = ['Debt-Clearance']
+  try {
+    const { userId, loanId, emiPaid } = req.body;
+
+    if (!emiPaid) {
+      return res.status(400).json({ message: "EMI amount is required." });
+    }
+
+    const debt = await DebtClearance.findOne({ userId });
+    const loan = debt.source.find((loan) => loan._id.toString() === loanId);
+
+    if (!loan) {
+      return res.status(404).json({ message: "Loan not found." });
+    }
+
+    const monthlyInterestRate = loan.interest / 100 / 12;
+    const interestForTheMonth = loan.principleAmount * monthlyInterestRate;
+
+    if (emiPaid < interestForTheMonth) {
+      return res
+        .status(400)
+        .json({ message: "EMI is too low to cover interest." });
+    }
+
+    const principalPaid = emiPaid - interestForTheMonth;
+
+    loan.currentPaid += emiPaid;
+    loan.outstandingBalance -= principalPaid;
+
+    // Add payment record to paymentHistory
+    loan.paymentHistory.push({
+      month: moment().format("YYYY-MM"), // Current month
+      emiPaid,
+      principalPaid: Math.round(principalPaid),
+      interestPaid: Math.round(interestForTheMonth),
+      remainingBalance: Math.round(loan.outstandingBalance),
+    });
+
+    await debt.save();
+
+    return res.status(200).json({
+      message: "EMI payment recorded successfully.",
+      data: {
+        loanId: loan._id,
+        emiPaid,
+        interestPaid: Math.round(interestForTheMonth),
+        principalPaid: Math.round(principalPaid),
+        currentPaid: loan.currentPaid,
+        outstandingBalance: Math.round(loan.outstandingBalance),
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error." });
   }
 };
