@@ -195,13 +195,14 @@ exports.payEMI = async (req, res) => {
 
     const currentDateTime = moment.tz("Asia/Kolkata");
     const currentDate = currentDateTime.format("YYYY-MM-DD");
-
+    const currentMonth = moment().format("YYYY-MM");
     // Push the payment history
     loan.paymentHistory.push({
-      date: currentDate,
+      month: currentMonth,
       emiPaid,
       principalPaid: Math.round(principalPaid),
       interestPaid: Math.round(interestForTheMonth),
+      remainingBalance: Math.round(loan.outstandingBalance),
     });
 
     // Recalculate Outstanding Balance
@@ -225,7 +226,7 @@ exports.payEMI = async (req, res) => {
         interestPaid: Math.round(interestForTheMonth),
         principalPaid: Math.round(principalPaid),
         currentPaid: loan.currentPaid,
-        outstandingBalance: loan.outstandingBalance,
+        outstandingBalance:  Math.round(loan.outstandingBalance),
         date: currentDate,
       },
     });
