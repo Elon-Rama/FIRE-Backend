@@ -250,12 +250,10 @@ exports.payEMI = async (req, res) => {
       return res.status(404).json({ message: "Loan not found for the given loanId." });
     }
 
-    // Correct property access
-    const totalMonths = loan.loanTenure; // Fixed from `tenure`
-    const principleAmount = loan.principleAmount; // Property matches
-    const interestRate = loan.interest; // Property matches
+    const totalMonths = loan.loanTenure;
+    const principleAmount = loan.principleAmount;
 
-    if (!totalMonths || !principleAmount || !interestRate) {
+    if (!totalMonths || !principleAmount) {
       console.error("Invalid loan details:", loan);
       return res.status(404).json({ message: "Invalid loan details in the database." });
     }
@@ -266,13 +264,23 @@ exports.payEMI = async (req, res) => {
       return res.status(400).json({ message: "Loan already fully paid." });
     }
 
-    const monthlyInterestRate = interestRate / 100 / 12;
-    const interestPercentage = totalMonths
-      ? 79.9 - currentPayments * (79.9 / totalMonths)
-      : 0;
+    // Define predefined percentages for each month
+    const predefinedPercentages = [
+      { interestPercentage: 67.35, principalPercentage: 32.65 }, // Month 1
+      { interestPercentage: 67.05, principalPercentage: 32.95 }, // Month 2
+      { interestPercentage: 66.75, principalPercentage: 33.25 }, // Month 3
+      // Add more months here or calculate dynamically
+    ];
 
-    const interestForTheMonth = emiPaid * (interestPercentage / 100) || 0;
-    const principalPaid = emiPaid - interestForTheMonth || 0;
+    // Get percentages for the current month
+    const currentPercentage =
+      predefinedPercentages[currentPayments] || predefinedPercentages[predefinedPercentages.length - 1];
+    const interestPercentage = currentPercentage.interestPercentage / 100;
+    const principalPercentage = currentPercentage.principalPercentage / 100;
+
+    // Calculate interest and principal for this EMI
+    const interestForTheMonth = emiPaid * interestPercentage;
+    const principalPaid = emiPaid * principalPercentage;
 
     if (emiPaid < interestForTheMonth) {
       return res.status(400).json({
@@ -325,5 +333,6 @@ exports.payEMI = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error." });
   }
 };
+
 
 
