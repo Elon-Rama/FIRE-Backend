@@ -183,7 +183,7 @@ exports.payEMI = async (req, res) => {
     const monthlyInterestRate = loan.interest / 100 / 12;
     const interestForTheMonth = loan.outstandingBalance * monthlyInterestRate;
 
-    if (emiPaid < interestForTheMonth) {
+    if (emiPaid > interestForTheMonth) {
       return res
         .status(400)
         .json({ message: "EMI is too low to cover interest." });
