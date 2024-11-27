@@ -248,8 +248,16 @@ exports.payEMI = async (req, res) => {
       return res.status(404).json({ message: "Loan not found." });
     }
 
-    // Calculate the monthly interest rate based on the current outstanding balance
-    const monthlyInterestRate = loan.interest / 100 / 12;
+    // Determine the monthly interest rate based on the number of payments made
+    const totalPaymentsMade = loan.paymentHistory.length;
+    let monthlyInterestRate = loan.interest / 100 / 12;
+
+    // Adjust interest rate after 6 months
+    if (totalPaymentsMade >= 6) {
+      monthlyInterestRate *= 0.9; // Example: reduce the interest rate by 10% after 6 months
+    }
+
+    // Calculate the interest for the current month based on the outstanding balance
     const interestForTheMonth = loan.outstandingBalance * monthlyInterestRate;
 
     if (emiPaid < interestForTheMonth) {
@@ -258,9 +266,10 @@ exports.payEMI = async (req, res) => {
         .json({ message: "EMI is too low to cover interest." });
     }
 
+    // Calculate the principal paid for this EMI
     const principalPaid = emiPaid - interestForTheMonth;
 
-    // Update current payment details
+    // Update the current total payment
     loan.currentPaid += emiPaid;
 
     // Update the loan's payment history
@@ -276,10 +285,10 @@ exports.payEMI = async (req, res) => {
       remainingBalance: Math.round(loan.outstandingBalance - principalPaid),
     });
 
-    // Recalculate the outstanding balance
+    // Update the outstanding balance after the payment
     loan.outstandingBalance -= principalPaid;
 
-    // Save the updated debt
+    // Save the updated debt information
     await debt.save();
 
     return res.status(200).json({
@@ -299,6 +308,7 @@ exports.payEMI = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error." });
   }
 };
+
 
 
 
