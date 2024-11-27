@@ -178,10 +178,9 @@ exports.getAllDebts = async (req, res) => {
 //       return res.status(404).json({ message: "Loan not found." });
 //     }
 
-//     // const monthlyInterestRate = loan.interest / 100 / 12;
-//     // const interestForTheMonth = loan.principleAmount * monthlyInterestRate;
 //     const monthlyInterestRate = loan.interest / 100 / 12;
-//     const interestForTheMonth = loan.outstandingBalance * monthlyInterestRate;
+//     const interestForTheMonth = loan.principleAmount * monthlyInterestRate;
+    
 
 //     if (emiPaid < interestForTheMonth) {
 //       return res
@@ -233,7 +232,6 @@ exports.getAllDebts = async (req, res) => {
 //     res.status(500).json({ message: "Internal Server Error." });
 //   }
 // };
-
 exports.payEMI = async (req, res) => {
   //#swagger.tags = ['Debt-Clearance']
   try {
@@ -250,32 +248,22 @@ exports.payEMI = async (req, res) => {
       return res.status(404).json({ message: "Loan not found." });
     }
 
-    // Monthly interest rate calculation
+    // Calculate the monthly interest rate based on the current outstanding balance
     const monthlyInterestRate = loan.interest / 100 / 12;
-
-    // Calculate interest for the current month based on outstanding balance
     const interestForTheMonth = loan.outstandingBalance * monthlyInterestRate;
-    // const interestForTheMonth = loan.principleAmount * monthlyInterestRate;
 
-    if (emiPaid < monthlyInterestRate) {
+    if (emiPaid < interestForTheMonth) {
       return res
         .status(400)
         .json({ message: "EMI is too low to cover interest." });
     }
 
-    // Calculate principal paid
     const principalPaid = emiPaid - interestForTheMonth;
 
-    // Update loan details
+    // Update current payment details
     loan.currentPaid += emiPaid;
 
-    // Update outstanding balance
-    loan.outstandingBalance -= principalPaid;
-
-    // Ensure outstanding balance doesn't go negative
-    loan.outstandingBalance = Math.max(0, loan.outstandingBalance);
-
-    // Record payment history
+    // Update the loan's payment history
     const currentDateTime = moment.tz("Asia/Kolkata");
     const currentDate = currentDateTime.format("YYYY-MM-DD");
     const currentMonth = moment().format("YYYY-MM");
@@ -285,10 +273,13 @@ exports.payEMI = async (req, res) => {
       emiPaid,
       principalPaid: Math.round(principalPaid),
       interestPaid: Math.round(interestForTheMonth),
-      remainingBalance: Math.round(loan.outstandingBalance),
+      remainingBalance: Math.round(loan.outstandingBalance - principalPaid),
     });
 
-    // Save updated debt record
+    // Recalculate the outstanding balance
+    loan.outstandingBalance -= principalPaid;
+
+    // Save the updated debt
     await debt.save();
 
     return res.status(200).json({
@@ -308,5 +299,6 @@ exports.payEMI = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error." });
   }
 };
+
 
 
