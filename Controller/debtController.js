@@ -254,11 +254,11 @@ exports.payEMI = async (req, res) => {
     // Calculate interest for the current month based on outstanding balance
     const interestForTheMonth = loan.outstandingBalance * monthlyInterestRate;
 
-    if (emiPaid < interestForTheMonth) {
-      return res
-        .status(400)
-        .json({ message: "EMI is too low to cover interest." });
-    }
+    // if (emiPaid < interestForTheMonth) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "EMI is too low to cover interest." });
+    // }
 
     // Calculate principal paid
     const principalPaid = emiPaid - interestForTheMonth;
