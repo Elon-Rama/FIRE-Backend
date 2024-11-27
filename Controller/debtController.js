@@ -248,23 +248,35 @@ exports.payEMI = async (req, res) => {
       return res.status(404).json({ message: "Loan not found." });
     }
 
-    // Calculate interest based on the outstanding balance, not the original principal
+    // Monthly interest rate calculation
     const monthlyInterestRate = loan.interest / 100 / 12;
+
+    // Calculate interest for the current month based on outstanding balance
     const interestForTheMonth = loan.outstandingBalance * monthlyInterestRate;
 
     if (emiPaid < interestForTheMonth) {
-      return res.status(400).json({ message: "EMI is too low to cover interest." });
+      return res
+        .status(400)
+        .json({ message: "EMI is too low to cover interest." });
     }
 
+    // Calculate principal paid
     const principalPaid = emiPaid - interestForTheMonth;
 
+    // Update loan details
     loan.currentPaid += emiPaid;
 
+    // Update outstanding balance
+    loan.outstandingBalance -= principalPaid;
+
+    // Ensure outstanding balance doesn't go negative
+    loan.outstandingBalance = Math.max(0, loan.outstandingBalance);
+
+    // Record payment history
     const currentDateTime = moment.tz("Asia/Kolkata");
     const currentDate = currentDateTime.format("YYYY-MM-DD");
     const currentMonth = moment().format("YYYY-MM");
 
-    // Update the payment history with the new interest and principal values
     loan.paymentHistory.push({
       month: currentMonth,
       emiPaid,
@@ -273,15 +285,7 @@ exports.payEMI = async (req, res) => {
       remainingBalance: Math.round(loan.outstandingBalance),
     });
 
-    // Recalculate the total principal paid so far
-    const totalPrincipalPaid = loan.paymentHistory.reduce(
-      (sum, payment) => sum + payment.principalPaid,
-      0
-    );
-
-    // Update the outstanding balance
-    loan.outstandingBalance = Math.round(loan.principleAmount - totalPrincipalPaid);
-
+    // Save updated debt record
     await debt.save();
 
     return res.status(200).json({
@@ -301,4 +305,5 @@ exports.payEMI = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error." });
   }
 };
+
 
