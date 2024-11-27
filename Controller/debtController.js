@@ -178,8 +178,10 @@ exports.payEMI = async (req, res) => {
       return res.status(404).json({ message: "Loan not found." });
     }
 
+    // const monthlyInterestRate = loan.interest / 100 / 12;
+    // const interestForTheMonth = loan.principleAmount * monthlyInterestRate;
     const monthlyInterestRate = loan.interest / 100 / 12;
-    const interestForTheMonth = loan.principleAmount * monthlyInterestRate;
+    const interestForTheMonth = loan.outstandingBalance * monthlyInterestRate;
 
     if (emiPaid < interestForTheMonth) {
       return res
@@ -249,10 +251,10 @@ exports.payEMI = async (req, res) => {
 //     }
 
 //     // Monthly interest rate calculation
-//     const monthlyInterestRate = loan.interest / 100 / 12;
+    // const monthlyInterestRate = loan.interest / 100 / 12;
 
 //     // Calculate interest for the current month based on outstanding balance
-//     const interestForTheMonth = loan.outstandingBalance * monthlyInterestRate;
+    // const interestForTheMonth = loan.outstandingBalance * monthlyInterestRate;
 
 //     if (emiPaid < interestForTheMonth) {
 //       return res
