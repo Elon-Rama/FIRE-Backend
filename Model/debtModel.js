@@ -15,7 +15,7 @@ const SourceSchema = new mongoose.Schema({
   paymentHistory: [
     {
       month: String, 
-      emiPaid: String,
+      emiPaid: Number,
       principalPaid: Number,
       interestPaid: Number,
       remainingBalance: Number,

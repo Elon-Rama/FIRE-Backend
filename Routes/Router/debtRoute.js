@@ -13,3 +13,16 @@ router.post('/payemi',verifyToken,DebtClearance.payEMI);
 // router.post('/payemi',DebtClearance.payEMI);
 
 module.exports = router;
+
+
+
+
+
+
+
+
+
+
+
+
+
