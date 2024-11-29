@@ -243,8 +243,11 @@ exports.payEMI = async (req, res) => {
     }
 
     const debt = await DebtClearance.findOne({ userId });
-    const loan = debt.source.find((loan) => loan._id.toString() === loanId);
+    if (!debt) {
+      return res.status(404).json({ message: "User not found." });
+    }
 
+    const loan = debt.source.find((loan) => loan._id.toString() === loanId);
     if (!loan) {
       return res.status(404).json({ message: "Loan not found." });
     }
@@ -263,11 +266,11 @@ exports.payEMI = async (req, res) => {
 
     const interestForTheMonth = loan.outstandingBalance * monthlyInterestRate;
 
-    // Check if the EMI paid is less than the required interest
-    if (emiPaid < interestForTheMonth) {
-      return res
-        .status(400)
-        .json({ message: "EMI is too low to cover interest." });
+    // Check if the EMI paid matches the calculated EMI
+    if (emiPaid !== Math.round(emi)) {
+      return res.status(400).json({ 
+        message: `Invalid EMI amount. Expected EMI is ${Math.round(emi)}.` 
+      });
     }
 
     const principalPaid = emiPaid - interestForTheMonth;
@@ -277,7 +280,7 @@ exports.payEMI = async (req, res) => {
 
     const currentDateTime = moment.tz("Asia/Kolkata");
     const currentDate = currentDateTime.format("YYYY-MM-DD");
-    const currentMonth = moment().format("YYYY-MM");
+    const currentMonth = currentDateTime.format("YYYY-MM");
 
     loan.paymentHistory.push({
       month: currentMonth,
@@ -305,7 +308,6 @@ exports.payEMI = async (req, res) => {
       data: {
         loanId: loan._id,
         emiPaid,
-        
         interestPaid: Math.round(interestForTheMonth),
         principalPaid: Math.round(principalPaid),
         currentPaid: loan.currentPaid,
@@ -318,6 +320,7 @@ exports.payEMI = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error." });
   }
 };
+
 
 
 
