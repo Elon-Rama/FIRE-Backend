@@ -31,15 +31,15 @@ exports.createDebt = async (req, res) => {
       const totalMonths = loan.loanTenure * 12;
 
       const emi =
-        (loan.principleAmount *
+        (loan.principalAmount *
           monthlyInterestRate *
           Math.pow(1 + monthlyInterestRate, totalMonths)) /
         (Math.pow(1 + monthlyInterestRate, totalMonths) - 1);
 
       const totalPayment = emi * totalMonths;
-      const totalInterestPayment = totalPayment - loan.principleAmount;
+      const totalInterestPayment = totalPayment - loan.principalAmount;
 
-      const outstandingBalance = totalPayment - loan.currentPaid;
+      const outstandingBalance = loan.principalAmount - loan.currentPaid;
 
       return {
         ...loan,
@@ -162,8 +162,78 @@ exports.getAllDebts = async (req, res) => {
   }
 };
 
+// exports.payEMI = async (req, res) => {
+//   //#swagger.tags = ['Debt-Clearance']
+//   try {
+//     const { userId, loanId, emiPaid } = req.body;
+
+//     if (!emiPaid) {
+//       return res.status(400).json({ message: "EMI amount is required." });
+//     }
+
+//     const debt = await DebtClearance.findOne({ userId });
+//     const loan = debt.source.find((loan) => loan._id.toString() === loanId);
+
+//     if (!loan) {
+//       return res.status(404).json({ message: "Loan not found." });
+//     }
+
+//     const monthlyInterestRate = loan.interest / 100 / 12;
+//     const interestForTheMonth = loan.principleAmount * monthlyInterestRate;
+    
+
+//     if (emiPaid < interestForTheMonth) {
+//       return res
+//         .status(400)
+//         .json({ message: "EMI is too low to cover interest." });
+//     }
+
+//     const principalPaid = emiPaid - interestForTheMonth;
+
+//     loan.currentPaid += emiPaid;
+
+//     const currentDateTime = moment.tz("Asia/Kolkata");
+//     const currentDate = currentDateTime.format("YYYY-MM-DD");
+//     const currentMonth = moment().format("YYYY-MM");
+
+//     loan.paymentHistory.push({
+//       month: currentMonth,
+//       emiPaid,
+//       principalPaid: Math.round(principalPaid),
+//       interestPaid: Math.round(interestForTheMonth),
+//       remainingBalance: Math.round(loan.outstandingBalance),
+//     });
+
+//     const totalPrincipalPaid = loan.paymentHistory.reduce(
+//       (sum, payment) => sum + payment.principalPaid,
+//       0
+//     );
+
+//     loan.outstandingBalance = Math.round(
+//       loan.principleAmount - totalPrincipalPaid
+//     );
+
+//     await debt.save();
+
+//     return res.status(200).json({
+//       message: "EMI payment recorded successfully.",
+//       data: {
+//         loanId: loan._id,
+//         emiPaid,
+//         interestPaid: Math.round(interestForTheMonth),
+//         principalPaid: Math.round(principalPaid),
+//         currentPaid: loan.currentPaid,
+//         outstandingBalance: Math.round(loan.outstandingBalance),
+//         date: currentDate,
+//       },
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Internal Server Error." });
+//   }
+// };
+
 exports.payEMI = async (req, res) => {
-  //#swagger.tags = ['Debt-Clearance']
   try {
     const { userId, loanId, emiPaid } = req.body;
 
@@ -171,27 +241,31 @@ exports.payEMI = async (req, res) => {
       return res.status(400).json({ message: "EMI amount is required." });
     }
 
+    // Fetch debt clearance data for the given userId
     const debt = await DebtClearance.findOne({ userId });
-    const loan = debt.source.find((loan) => loan._id.toString() === loanId);
+    if (!debt) {
+      return res.status(404).json({ message: "Debt record not found." });
+    }
 
+    // Find the specific loan by its ID
+    const loan = debt.source.find((loan) => loan._id.toString() === loanId);
     if (!loan) {
       return res.status(404).json({ message: "Loan not found." });
     }
 
+    // Calculate the interest for the month based on the current outstanding balance
     const monthlyInterestRate = loan.interest / 100 / 12;
-    const interestForTheMonth = loan.principleAmount * monthlyInterestRate;
-    
+    const interestForTheMonth = loan.outstandingBalance * monthlyInterestRate;
 
     if (emiPaid < interestForTheMonth) {
-      return res
-        .status(400)
-        .json({ message: "EMI is too low to cover interest." });
+      return res.status(400).json({ message: "EMI is too low to cover interest." });
     }
 
+    // Calculate the principal portion of the EMI paid
     const principalPaid = emiPaid - interestForTheMonth;
 
+    // Update the current paid amount and the payment history
     loan.currentPaid += emiPaid;
-
     const currentDateTime = moment.tz("Asia/Kolkata");
     const currentDate = currentDateTime.format("YYYY-MM-DD");
     const currentMonth = moment().format("YYYY-MM");
@@ -204,15 +278,12 @@ exports.payEMI = async (req, res) => {
       remainingBalance: Math.round(loan.outstandingBalance),
     });
 
-    const totalPrincipalPaid = loan.paymentHistory.reduce(
-      (sum, payment) => sum + payment.principalPaid,
-      0
-    );
-
+    // Update the outstanding balance after the principal is paid
     loan.outstandingBalance = Math.round(
-      loan.principleAmount - totalPrincipalPaid
+      loan.outstandingBalance - principalPaid
     );
 
+    // Save the updated debt record
     await debt.save();
 
     return res.status(200).json({
@@ -232,7 +303,6 @@ exports.payEMI = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error." });
   }
 };
-
 
 
 

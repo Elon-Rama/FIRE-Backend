@@ -2141,9 +2141,6 @@
     },
     "/api/debt/payemi": {
       "post": {
-        "tags": [
-          "Debt-Clearance"
-        ],
         "description": "",
         "parameters": [
           {

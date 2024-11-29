@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const SourceSchema = new mongoose.Schema({
   loanName: String,
-  principleAmount: Number,
+  principalAmount: Number,
   interest: Number,
   loanTenure: Number,
   currentPaid: { type: Number, default: 0 },
