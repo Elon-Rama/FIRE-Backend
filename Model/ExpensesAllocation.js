@@ -28,6 +28,10 @@ const expensesAllocationSchema = new mongoose.Schema({
         type: Number,
         default: 0,
       },
+      individualTitleCatecaoryTotalAmount:{
+        type : Number,
+        default: 0
+      },
       category: [
         {
           title: {
@@ -48,11 +52,11 @@ const expensesAllocationSchema = new mongoose.Schema({
                 type: String,
                 required: true,
               },
-            },
+            }
           ],
           totalAmount: {
             type: Number,
-            default: 0,
+            default: 0, // This should be updated programmatically
           },
         },
       ],
@@ -60,7 +64,7 @@ const expensesAllocationSchema = new mongoose.Schema({
   ],
   totalExpenses: {
     type: Number,
-    default: 0,
+    default: 0, // This should be updated programmatically
   },
 });
 

@@ -417,28 +417,37 @@ exports.getAll = async (req, res) => {
     allocation.titles = allocation.titles.map((title) => {
       const titleAmount = title.amount;
 
+      let individualTitleCatecaoryTotalAmount = 0; // Initialize total amount for this title
+
       title.category = title.category.map((cat) => {
         const categoryTotalAmount = cat.amounts.reduce(
           (sum, amt) => sum + amt.amount,
           0
         );
         cat.totalAmount = categoryTotalAmount;
-
         categoryTotal += categoryTotalAmount;
+        individualTitleCatecaoryTotalAmount += categoryTotalAmount;
 
-        return cat;
+        // Add the computed value to each category and return it
+        return {
+          ...cat,
+          individualTitleCatecaoryTotalAmount, // Add this computed value
+        };
       });
 
       AllocationTotal += titleAmount;
-
+console.log("first",individualTitleCatecaoryTotalAmount)
+      // Add the `individualTitleCatecaoryTotalAmount` to the title object
+      console.log("tt", title)
       return {
         ...title,
         amount: titleAmount,
+        individualTitleCatecaoryTotalAmount, // Add the computed value here
       };
     });
 
     allocation.AllocationTotal = AllocationTotal;
-    await allocation.save();
+    // await allocation.save();
 
     res.status(200).json({
       statuscode: "0",
@@ -459,6 +468,7 @@ exports.getAll = async (req, res) => {
     });
   }
 };
+
 
 exports.getById = async (req, res) => {
   //#swagger.tags = ['Expenses Allocation']

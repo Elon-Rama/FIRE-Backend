@@ -49,7 +49,7 @@ exports.createDebt = async (req, res) => {
         outstandingBalance: Math.round(outstandingBalance),
         date: currentDate,
         time: currentTime,
-        paymentHistory: [], // Initialize paymentHistory as an empty array
+        paymentHistory: [],
       };
     });
 
@@ -95,72 +95,6 @@ exports.createDebt = async (req, res) => {
   }
 };
 
-// exports.getAllDebts = async (req, res) => {
-//   //#swagger.tags = ['Debt-Clearance']
-//   try {
-//     const { userId } = req.query;
-
-//     if (!userId) {
-//       return res.status(400).json({
-//         statusCode: "1",
-//         message: "Invalid request. Please provide a valid userId.",
-//       });
-//     }
-
-//     const user = await User.findById(userId);
-//     if (!user) {
-//       return res.status(404).json({
-//         statusCode: "1",
-//         message: "User not found. Please provide a valid userId.",
-//       });
-//     }
-
-//     const debtClearance = await DebtClearance.findOne({ userId });
-
-//     if (!debtClearance) {
-//       return res.status(404).json({
-//         statusCode: "1",
-//         message: "No debt clearance records found for the user.",
-//       });
-//     }
-
-//     let totalDebt = 0;
-//     let totalInterest = 0;
-//     let totalPaid = 0;
-//     let totalOwed = 0;
-
-//     debtClearance.source.forEach((loan) => {
-//       totalDebt += loan.principalAmount;
-//       totalInterest += loan.totalInterestPayment;
-//       totalPaid += loan.currentPaid;
-//       totalOwed += loan.totalPayment - loan.currentPaid;
-//     });
-
-//     return res.status(200).json({
-//       statusCode: "0",
-//       message: "Debt clearance records fetched successfully.",
-//       userId: debtClearance.userId,
-//       debtId: debtClearance._id,
-//       data: [
-//         {
-//           source: debtClearance.source,
-//           summary: {
-//             TotalDebt: Math.round(totalDebt),
-//             TotalInterest: Math.round(totalInterest),
-//             TotalPaid: Math.round(totalPaid),
-//             TotalOwed: Math.round(totalOwed),
-//           },
-//         },
-//       ],
-//     });
-//   } catch (error) {
-//     console.error("Error fetching debt clearance records:", error);
-//     res.status(500).json({
-//       statusCode: "1",
-//       message: "Internal Server Error",
-//     });
-//   }
-// };
 exports.getAllDebts = async (req, res) => {
   //#swagger.tags = ['Debt-Clearance']
   try {
@@ -201,14 +135,11 @@ exports.getAllDebts = async (req, res) => {
       totalPaid += loan.currentPaid;
       totalOwed += loan.totalPayment - loan.currentPaid;
 
-      // Calculate the payment history's remaining balance
       let currentBalance = loan.principalAmount;
       loan.paymentHistory.forEach((payment, index) => {
-        // Calculate remaining balance after each payment
         currentBalance -= payment.principalPaid;
 
-        // Update the payment object with the correct remaining balance
-        payment.remainingBalance = Math.max(0, currentBalance); // Ensure no negative value
+        payment.remainingBalance = Math.max(0, currentBalance);
       });
     });
 
