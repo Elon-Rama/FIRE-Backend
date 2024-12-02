@@ -12,6 +12,7 @@ const expensesRealityRoute = require('./Router/expensesRealityRouter');
 const childRoute = require('./Router/childRoute');
 const emergencyRoute = require('./Router/emergencyRoute');
 const debtRoute = require("./Router/debtRoute");
+const financialRoute = require("./Router/financialRoute");
 
 api.use('/user',emailRoute);
 api.use('/profile',userRoute);
@@ -24,5 +25,6 @@ api.use('/childexpenses',childRoute);
 api.use('/realityexpenses',expensesRealityRoute);
 api.use('/emergency',emergencyRoute);
 api.use('/debt',debtRoute);
+api.use('/health',financialRoute);
 
 module.exports = api;
