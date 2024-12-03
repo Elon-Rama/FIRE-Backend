@@ -170,6 +170,7 @@ exports.getAllDebts = async (req, res) => {
 };
 
 exports.payEMI = async (req, res) => {
+   //#swagger.tags = ['Debt-Clearance']
   try {
     const { userId, loanId, emiPaid } = req.body;
 

@@ -2144,6 +2144,9 @@
     },
     "/api/debt/payemi": {
       "post": {
+        "tags": [
+          "Debt-Clearance"
+        ],
         "description": "",
         "parameters": [
           {
@@ -2191,9 +2194,6 @@
     },
     "/api/health/create": {
       "post": {
-        "tags": [
-          "Financial-Health"
-        ],
         "description": "",
         "parameters": [
           {

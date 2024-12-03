@@ -144,16 +144,25 @@ const calculateScores = (data) => {
   return scores;
 };
 
-// Create Financial Health Record
-exports.createFinancialData = async (req, res) => {
-  //#swagger.tags = ['Financial-Health']
+
+exports.createFinancialData = async (req, res) => { 
   try {
-    const { userId, monthlyIncome, monthlyExpenses, totalDebt, monthlyEMI, insuranceCoverage, emergencyFund, investments } = req.body;
-        const userExists = await User.findById(userId);
-        if (!userExists) {
-          return res.status(400).json({ statusCode: '1', message: 'Invalid UserId' });
-        }
-    // Calculate scores
+    const {
+      userId,
+      monthlyIncome,
+      monthlyExpenses,
+      totalDebt,
+      monthlyEMI,
+      insuranceCoverage,
+      emergencyFund,
+      investments,
+    } = req.body;
+
+    const userExists = await User.findById(userId);
+    if (!userExists) {
+      return res.status(400).json({ statusCode: '1', message: 'Invalid UserId' });
+    }
+
     const scores = calculateScores({
       monthlyIncome,
       monthlyExpenses,
@@ -164,7 +173,6 @@ exports.createFinancialData = async (req, res) => {
       investments,
     });
 
-    // Save to database
     const financialHealth = new FinancialHealth({
       userId,
       monthlyIncome,
@@ -183,6 +191,7 @@ exports.createFinancialData = async (req, res) => {
     res.status(500).json({ message: 'Error creating financial health record', error: error.message });
   }
 };
+
 
 
 exports.getFinancialAnalysis = async (req, res) => {
