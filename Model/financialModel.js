@@ -23,34 +23,25 @@
 
 // module.exports = mongoose.model('FinancialHealth', financialSchema);
 
-// financialModel.js
 const mongoose = require('mongoose');
 
-const financialHealthSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  monthlyIncome: { type: String, default: '0' },
-  monthlyExpenses: { type: String, default: '0' },
-  Savings: [
-    {
-      totalSavings: { type: String, default: '0' },
-      investments: { type: String, default: '0' },
-    },
-  ],
-  debt: [
-    {
-      monthlyDebtPayments: { type: String, default: '0' },
-      totalDebtBalance: { type: String, default: '0' },
-    },
-  ],
-  Insurance: [
-    {
-      health: { type: String, default: '0' },
-      life: { type: String, default: '0' },
-    },
-  ],
-  emergencyFund: { type: String, default: '0' },
-});
+const financialSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+  monthlyIncome: { type: Number, required: true },
+  monthlyExpenses: { type: Number, required: true },
+  totalDebt: { type: Number, required: true },
+  monthlyEMI: { type: Number, required: true },
+  insuranceCoverage: { type: String, enum: ['Health', 'Terms', 'Both', 'None'], required: true },
+  emergencyFund: { type: Number, required: true },
+  investments: [{ type: String, enum: ['Gold', 'Stocks', 'MutualFund', 'Bonds', 'RealEstate', 'Others'], required: true }],
+  scores: {
+    savingsRate: { type: Number, default: 0 },
+    debtToIncome: { type: Number, default: 0 },
+    emergencyFundAdequacy: { type: Number, default: 0 },
+    insuranceCoverage: { type: Number, default: 0 },
+    investmentDiversification: { type: Number, default: 0 },
+    overallScore: { type: Number, default: 0 },
+  },
+}, { timestamps: true });
 
-const FinancialHealth = mongoose.model('FinancialHealth', financialHealthSchema);
-
-module.exports = FinancialHealth;
+module.exports = mongoose.model('FinancialHealth', financialSchema);

@@ -5,6 +5,7 @@ const ChildExpenses = require("../../Model/ChildExpensesModel");
 const moment = require("moment-timezone");
 
 exports.upsert = async (req, res) => {
+  //#swagger.tags = ['Expenses Allocation']
   try {
     const { userId, titles, month, year } = req.body;
     const user = await User.findById(userId);

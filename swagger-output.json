@@ -814,6 +814,9 @@
     },
     "/api/personal/create": {
       "post": {
+        "tags": [
+          "Expenses Allocation"
+        ],
         "description": "",
         "parameters": [
           {
@@ -2188,8 +2191,16 @@
     },
     "/api/health/create": {
       "post": {
+        "tags": [
+          "Financial-Health"
+        ],
         "description": "",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -2205,58 +2216,13 @@
                 "monthlyExpenses": {
                   "example": "any"
                 },
-                "Savings": {
+                "totalDebt": {
                   "example": "any"
                 },
-                "debt": {
+                "monthlyEMI": {
                   "example": "any"
                 },
-                "Insurance": {
-                  "example": "any"
-                },
-                "emergencyFund": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/health/analyze": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "income": {
-                  "example": "any"
-                },
-                "expenses": {
-                  "example": "any"
-                },
-                "savings": {
-                  "example": "any"
-                },
-                "debt": {
-                  "example": "any"
-                },
-                "insurance": {
+                "insuranceCoverage": {
                   "example": "any"
                 },
                 "emergencyFund": {
@@ -2270,8 +2236,43 @@
           }
         ],
         "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/health/analyze": {
+      "post": {
+        "tags": [
+          "Financial-Health"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
           },
           "500": {
             "description": "Internal Server Error"
