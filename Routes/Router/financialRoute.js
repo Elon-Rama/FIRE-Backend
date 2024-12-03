@@ -5,6 +5,7 @@ const FinancialHealth = require("../../Controller/financialController");
 
 router.post('/create',verifyToken,FinancialHealth.createFinancialData);
 router.post('/analyze',verifyToken,FinancialHealth.getFinancialAnalysis);
+
 // router.post('/create',FinancialHealth.createFinancialData);
 // router.post('/analyze',FinancialHealth.getFinancialAnalysis);
 

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 
 // const financialSchema = new mongoose.Schema({
 //     userId: {
@@ -23,25 +23,31 @@ const mongoose = require('mongoose');
 
 // module.exports = mongoose.model('FinancialHealth', financialSchema);
 
+const mongoose = require('mongoose');
+
 const financialSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
-  monthlyIncome: { type: Number, required: true },
-  monthlyExpenses: { type: Number, required: true },
-  totalDebt: { type: Number, required: true },
-  monthlyEMI: { type: Number, required: true },
-  insuranceCoverage: { type: String, enum: ['Health', 'Terms', 'Both', 'None'], required: true },
-  emergencyFund: { type: Number, required: true },
+  monthlyIncome: { type: Number, default: 0 }, // Default value set to 0
+  monthlyExpenses: { type: Number, default: 0 }, // Default value set to 0
+  totalDebt: { type: Number, default: 0 }, // Default value set to 0
+  monthlyEMI: { type: Number, default: 0 }, // Default value set to 0
+  insuranceCoverage: { 
+    type: String, 
+    enum: ['Health', 'Terms', 'Both', 'None'], 
+    default: 'None' // Default value set to 'None'
+  },
+  emergencyFund: { type: Number, default: 0 }, // Default value set to 0
   investments: [{
     type: { type: String, enum: ['Gold', 'Stocks', 'MutualFund', 'Bonds', 'RealEstate', 'Others'], required: true },
-    value: { type: Number, required: true },
+    value: { type: Number, default: 0 }, // Default value set to 0
   }],
   scores: {
-    savingsRate: { type: Number, default: 0 },
-    debtToIncome: { type: Number, default: 0 },
-    emergencyFundAdequacy: { type: Number, default: 0 },
-    insuranceCoverage: { type: Number, default: 0 },
-    investmentDiversification: { type: Number, default: 0 },
-    overallScore: { type: Number, default: 0 },
+    savingsRate: { type: Number, default: 0 }, // Default value set to 0
+    debtToIncome: { type: Number, default: 0 }, // Default value set to 0
+    emergencyFundAdequacy: { type: Number, default: 0 }, // Default value set to 0
+    insuranceCoverage: { type: Number, default: 0 }, // Default value set to 0
+    investmentDiversification: { type: Number, default: 0 }, // Default value set to 0
+    overallScore: { type: Number, default: 0 }, // Default value set to 0
   },
 }, { timestamps: true });
 
