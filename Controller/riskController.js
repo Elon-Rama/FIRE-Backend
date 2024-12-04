@@ -2,9 +2,9 @@
 const PersonalRisk = require('../Model/riskModel');
 const User = require('../Model/emailModel');
 
-// POST API: Save user answers and calculate risk profile
+
 exports.saveRiskProfile = async (req, res) => {
-     //#swagger.tags = ['PersonalRisk-Tolerance']
+     //#swagger.tags = ['PersonalRisk-Tolerance]
     try {
         const { userId, answers } = req.body;
 
@@ -50,9 +50,9 @@ exports.saveRiskProfile = async (req, res) => {
     }
 };
 
-// GET API: Retrieve a user's risk profile by userId
+
 exports.getRiskProfile = async (req, res) => {
-    //#swagger.tags = ['PersonalRisk-Tolerance']
+    //#swagger.tags = ['PersonalRisk-Tolerance]
     try {
         const { userId } = req.params;
 
