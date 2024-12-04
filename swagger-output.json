@@ -2255,7 +2255,7 @@
       }
     },
     "/api/health/analyze": {
-      "post": {
+      "get": {
         "tags": [
           "Financial-Health"
         ],
