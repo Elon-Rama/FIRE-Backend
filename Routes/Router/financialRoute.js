@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const {verifyToken} = require('../../Middleware/authMiddleware');
-const FinancialHealth = require("../../Controller/financialController");
+const Financial = require("../../Controller/financialController");
 
-router.post('/create',verifyToken,FinancialHealth.createFinancialData);
-router.post('/analyze',verifyToken,FinancialHealth.getFinancialAnalysis);
+router.post('/create',verifyToken,Financial.createFinancialData);
+router.post('/analyze',verifyToken,Financial.getUserFinancial);
 
-// router.post('/create',FinancialHealth.createFinancialData);
-// router.post('/analyze',FinancialHealth.getFinancialAnalysis);
+// router.post('/create',Financial.createFinancialData);
+// router.get('/analyze',Financial.getUserFinancial);
 
 module.exports = router;

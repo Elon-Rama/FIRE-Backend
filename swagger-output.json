@@ -2194,6 +2194,9 @@
     },
     "/api/health/create": {
       "post": {
+        "tags": [
+          "Financial-Health"
+        ],
         "description": "",
         "parameters": [
           {
@@ -2210,19 +2213,19 @@
                 "userId": {
                   "example": "any"
                 },
-                "monthlyIncome": {
+                "income": {
                   "example": "any"
                 },
-                "monthlyExpenses": {
+                "expenses": {
                   "example": "any"
                 },
-                "totalDebt": {
+                "debtAmount": {
                   "example": "any"
                 },
-                "monthlyEMI": {
+                "monthlyEmi": {
                   "example": "any"
                 },
-                "insuranceCoverage": {
+                "insurance": {
                   "example": "any"
                 },
                 "emergencyFund": {
@@ -2239,11 +2242,11 @@
           "201": {
             "description": "Created"
           },
-          "400": {
-            "description": "Bad Request"
-          },
           "401": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
           },
           "500": {
             "description": "Internal Server Error"
@@ -2262,11 +2265,19 @@
             "name": "authorization",
             "in": "header",
             "type": "string"
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "type": "string"
           }
         ],
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "401": {
             "description": "Unauthorized"
