@@ -387,14 +387,14 @@ exports.getUserFinancial = async (req, res) => {
       diversificationStatus === "Excellent" ? 25 : 25
     );
 
-//     // Save scores and statuses in the database
-//     userFinancialData.scores = [ {
-//       savingsRate: { value: savingsRate.toFixed(2), status: savingsStatus, points: savingsPoints },
-//       debtToIncomeRatio: { value: dti.toFixed(2), status: dtiStatus, points: dtiPoints },
-//       emergencyFund: { value: emergencyMonths.toFixed(2), status: emergencyStatus, points: emergencyPoints },
-//       insuranceCoverage: { healthInsuranceCoverage, lifeInsuranceCoverage, status: insuranceStatus, points: insurancePoints },
-//       investmentDiversification: { status: diversificationStatus, points: diversificationPoints },
-//     }];
+    // Save scores and statuses in the database
+    userFinancialData.scores = [ {
+      savingsRate: { value: savingsRate.toFixed(2), status: savingsStatus, points: savingsPoints },
+      debtToIncomeRatio: { value: dti.toFixed(2), status: dtiStatus, points: dtiPoints },
+      emergencyFund: { value: emergencyMonths.toFixed(2), status: emergencyStatus, points: emergencyPoints },
+      insuranceCoverage: { healthInsuranceCoverage, lifeInsuranceCoverage, status: insuranceStatus, points: insurancePoints },
+      investmentDiversification: { status: diversificationStatus, points: diversificationPoints },
+    }];
 
 //     await userFinancialData.save();
 
