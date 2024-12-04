@@ -2256,9 +2256,6 @@
     },
     "/api/health/analyze": {
       "get": {
-        "tags": [
-          "Financial-Health"
-        ],
         "description": "",
         "parameters": [
           {
@@ -2273,30 +2270,6 @@
           }
         ],
         "responses": {
-          "0": {
-            "description": ""
-          },
-          "1": {
-            "description": ""
-          },
-          "2": {
-            "description": ""
-          },
-          "3": {
-            "description": ""
-          },
-          "4": {
-            "description": ""
-          },
-          "5": {
-            "description": ""
-          },
-          "6": {
-            "description": ""
-          },
-          "7": {
-            "description": ""
-          },
           "200": {
             "description": "OK"
           },

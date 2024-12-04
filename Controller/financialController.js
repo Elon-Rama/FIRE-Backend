@@ -263,16 +263,10 @@ exports.createFinancialData = async (req, res) => {
 //   }
 // };
 
-
-
-
-
 exports.getUserFinancial = async (req, res) => {
-  //#swagger.tags = ['Financial-Health']
   try {
     const { userId } = req.query;
 
-    // Validate the userId
     if (!userId) {
       return res.status(400).json({ message: "User ID is required" });
     }
@@ -291,6 +285,8 @@ exports.getUserFinancial = async (req, res) => {
       healthInsurance,
       lifeInsurance,
       investments,
+      scores: existingScores,
+      overallScore: existingOverallScore,
     } = userFinancialData;
 
     // Validate required financial fields
@@ -305,7 +301,6 @@ exports.getUserFinancial = async (req, res) => {
     const monthlyDebtPayments = parseFloat(monthlyEmi);
     const totalEmergencyFund = parseFloat(emergencyFund);
 
-    // Validate numeric data
     if (
       isNaN(monthlyIncome) ||
       isNaN(monthlyExpenses) ||
@@ -317,147 +312,142 @@ exports.getUserFinancial = async (req, res) => {
       });
     }
 
-    // Calculations and Analysis
-    const calculatePoints = (status, range) => Math.floor(Math.random() * range) + status;
-
-    // Savings Rate
+    // Calculate metrics (deterministic)
     const savingsRate = ((monthlyIncome - monthlyExpenses) / monthlyIncome) * 100;
-    const savings = [
-      { threshold: 30, status: "Excellent", range: 25, start: 76 },
-      { threshold: 20, status: "Good", range: 25, start: 51 },
-      { threshold: 10, status: "Needs Improvement", range: 25, start: 26 },
-      { threshold: 0, status: "Poor", range: 25, start: 0 },
-    ].find(({ threshold }) => savingsRate >= threshold);
-    const savingsStatus = savings?.status || "Poor";
-    const savingsPoints = calculatePoints(savings?.start || 0, savings?.range || 25);
-
-    // Debt-to-Income Ratio (DTI)
     const dti = (monthlyDebtPayments / monthlyIncome) * 100;
-    const debt = [
-      { threshold: 10, status: "Excellent", range: 25, start: 76 },
-      { threshold: 30, status: "Good", range: 25, start: 51 },
-      { threshold: 50, status: "Needs Improvement", range: 25, start: 26 },
-      { threshold: 100, status: "Poor", range: 25, start: 0 },
-    ].find(({ threshold }) => dti < threshold);
-    const dtiStatus = debt?.status || "Poor";
-    const dtiPoints = calculatePoints(debt?.start || 0, debt?.range || 25);
-
-    // Emergency Fund Adequacy
     const emergencyMonths = totalEmergencyFund / monthlyExpenses;
-    const emergency = [
-      { threshold: 6, status: "Excellent", range: 25, start: 76 },
-      { threshold: 3, status: "Good", range: 25, start: 51 },
-      { threshold: 1, status: "Needs Improvement", range: 25, start: 26 },
-      { threshold: 0, status: "Poor", range: 25, start: 0 },
-    ].find(({ threshold }) => emergencyMonths >= threshold);
-    const emergencyStatus = emergency?.status || "Poor";
-    const emergencyPoints = calculatePoints(emergency?.start || 0, emergency?.range || 25);
-
-    // Insurance Coverage
     const annualIncome = monthlyIncome * 12;
     const healthInsuranceCoverage = parseFloat(healthInsurance || 0);
     const lifeInsuranceCoverage = parseFloat(lifeInsurance || 0);
     const isAdequateHealthInsurance =
-      healthInsuranceCoverage >= monthlyIncome * 5 && healthInsuranceCoverage <= monthlyIncome * 10;
+      healthInsuranceCoverage >= monthlyIncome * 5 &&
+      healthInsuranceCoverage <= monthlyIncome * 10;
     const isAdequateLifeInsurance =
-      lifeInsuranceCoverage >= annualIncome * 10 && lifeInsuranceCoverage <= annualIncome * 20;
+      lifeInsuranceCoverage >= annualIncome * 10 &&
+      lifeInsuranceCoverage <= annualIncome * 20;
 
-    const insuranceStatus =
-      !healthInsuranceCoverage && !lifeInsuranceCoverage
-        ? "Poor"
-        : isAdequateHealthInsurance && isAdequateLifeInsurance
-        ? "Excellent"
-        : "Needs Improvement";
-    const insurancePoints = calculatePoints(
-      insuranceStatus === "Excellent" ? 76 : 26,
-      insuranceStatus === "Excellent" ? 25 : 25
+    const investmentsCount = investments?.length || 0;
+
+    // Create a deterministic scoring mechanism
+    const calculateScore = (value, thresholds) =>
+      thresholds.reduce((score, { threshold, points }) => (value >= threshold ? points : score), 0);
+
+    const savingsPoints = calculateScore(savingsRate, [
+      { threshold: 30, points: 100 },
+      { threshold: 20, points: 75 },
+      { threshold: 10, points: 50 },
+      { threshold: 0, points: 25 },
+    ]);
+
+    const dtiPoints = calculateScore(dti, [
+      { threshold: 10, points: 100 },
+      { threshold: 30, points: 75 },
+      { threshold: 50, points: 50 },
+      { threshold: 100, points: 25 },
+    ]);
+
+    const emergencyPoints = calculateScore(emergencyMonths, [
+      { threshold: 6, points: 100 },
+      { threshold: 3, points: 75 },
+      { threshold: 1, points: 50 },
+      { threshold: 0, points: 25 },
+    ]);
+
+    const insurancePoints = calculateScore(
+      isAdequateHealthInsurance && isAdequateLifeInsurance ? 1 : 0,
+      [{ threshold: 1, points: 100 }]
     );
 
-    // Investment Diversification
-    const diversificationStatus =
-      investments?.length > 4
-        ? "Excellent"
-        : investments?.length === 4
-        ? "Good"
-        : investments?.length === 3
-        ? "Needs Improvement"
-        : "Poor";
-    const diversificationPoints = calculatePoints(
-      diversificationStatus === "Excellent" ? 76 : 26,
-      diversificationStatus === "Excellent" ? 25 : 25
-    );
+    const diversificationPoints = calculateScore(investmentsCount, [
+      { threshold: 4, points: 100 },
+      { threshold: 3, points: 75 },
+      { threshold: 2, points: 50 },
+      { threshold: 0, points: 25 },
+    ]);
 
-    // Save scores and statuses in the database
-    userFinancialData.scores = [ {
-      savingsRate: { value: savingsRate.toFixed(2), status: savingsStatus, points: savingsPoints },
-      debtToIncomeRatio: { value: dti.toFixed(2), status: dtiStatus, points: dtiPoints },
-      emergencyFund: { value: emergencyMonths.toFixed(2), status: emergencyStatus, points: emergencyPoints },
-      insuranceCoverage: { healthInsuranceCoverage, lifeInsuranceCoverage, status: insuranceStatus, points: insurancePoints },
-      investmentDiversification: { status: diversificationStatus, points: diversificationPoints },
-    }];
+    const weights = {
+      savingsRate: 0.3,
+      debtToIncomeRatio: 0.2,
+      emergencyFund: 0.2,
+      insuranceCoverage: 0.15,
+      investmentDiversification: 0.15,
+    };
 
-//     await userFinancialData.save();
+    const overallScore =
+      savingsPoints * weights.savingsRate +
+      dtiPoints * weights.debtToIncomeRatio +
+      emergencyPoints * weights.emergencyFund +
+      insurancePoints * weights.insuranceCoverage +
+      diversificationPoints * weights.investmentDiversification;
 
-//     res.status(200).json({ message: "Data analyzed and saved successfully", data: userFinancialData.scores });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Internal server error", error });
-//   }
-// };
-// Assign weights to each metric
-const weights = {
-  savingsRate: 0.3,
-  debtToIncomeRatio: 0.2,
-  emergencyFund: 0.2,
-  insuranceCoverage: 0.15,
-  investmentDiversification: 0.15,
-};
+    // Categorize the overall score
+    let category, description;
+    if (overallScore <= 40) {
+      category = "Poor";
+      description = "Financial distress; immediate changes needed.";
+    } else if (overallScore <= 60) {
+      category = "Fair";
+      description = "Needs improvement; some metrics are healthy, others need attention.";
+    } else if (overallScore <= 80) {
+      category = "Good";
+      description = "Financially stable with room to improve.";
+    } else {
+      category = "Excellent";
+      description = "Strong financial position with all metrics in check.";
+    }
 
-// Calculate the overall score
-const overallScore =
-  (savingsPoints * weights.savingsRate) +
-  (dtiPoints * weights.debtToIncomeRatio) +
-  (emergencyPoints * weights.emergencyFund) +
-  (insurancePoints * weights.insuranceCoverage) +
-  (diversificationPoints * weights.investmentDiversification);
+    // Compare with existing data
+    if (
+      existingOverallScore === overallScore &&
+      JSON.stringify(existingScores) === JSON.stringify([
+        {
+          savingsRate: { value: savingsRate.toFixed(2), points: savingsPoints },
+          dti: { value: dti.toFixed(2), points: dtiPoints },
+          emergencyFund: { value: emergencyMonths.toFixed(2), points: emergencyPoints },
+          insuranceCoverage: { points: insurancePoints },
+          investmentDiversification: { points: diversificationPoints },
+        },
+      ])
+    ) {
+      return res.status(200).json({
+        message: "No changes detected; returning existing data",
+        data: {
+          scores: existingScores,
+          overallScore: existingOverallScore,
+          category: userFinancialData.category,
+          description: userFinancialData.description,
+        },
+      });
+    }
 
-// Categorize the overall score
-let category, description;
-if (overallScore <= 40) {
-  category = "Poor";
-  description = "Financial distress; immediate changes needed.";
-} else if (overallScore <= 60) {
-  category = "Fair";
-  description = "Needs improvement; some metrics are healthy, others need attention.";
-} else if (overallScore <= 80) {
-  category = "Good";
-  description = "Financially stable with room to improve.";
-} else {
-  category = "Excellent";
-  description = "Strong financial position with all metrics in check.";
-}
+    // Save the updated data if changes are detected
+    userFinancialData.scores = [
+      {
+        savingsRate: { value: savingsRate.toFixed(2), points: savingsPoints },
+        dti: { value: dti.toFixed(2), points: dtiPoints },
+        emergencyFund: { value: emergencyMonths.toFixed(2), points: emergencyPoints },
+        insuranceCoverage: { points: insurancePoints },
+        investmentDiversification: { points: diversificationPoints },
+      },
+    ];
+    userFinancialData.overallScore = overallScore.toFixed(2);
+    userFinancialData.category = category;
+    userFinancialData.description = description;
 
-// Save the overall score and category to the database
-userFinancialData.overallScore = overallScore.toFixed(2);
-userFinancialData.category = category;
-userFinancialData.description = description;
+    await userFinancialData.save();
 
-await userFinancialData.save();
-
-// Send the response
-res.status(200).json({
-  message: "Data analyzed and saved successfully",
-  data: [ {
-    scores: userFinancialData.scores,
-    overallScore: userFinancialData.overallScore,
-    category: userFinancialData.category,
-    description: userFinancialData.description,
-  }],
-});
-  
-} catch (error) {
-  console.error(error);
-  res.status(500).json({ message: "Internal server error", error });
-}
+    res.status(200).json({
+      message: "Data analyzed and saved successfully",
+      data: {
+        scores: userFinancialData.scores,
+        overallScore: userFinancialData.overallScore,
+        category: userFinancialData.category,
+        description: userFinancialData.description,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
 };
 
