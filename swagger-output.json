@@ -2200,11 +2200,6 @@
         "description": "",
         "parameters": [
           {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          },
-          {
             "name": "body",
             "in": "body",
             "schema": {
@@ -2242,9 +2237,6 @@
           "201": {
             "description": "Created"
           },
-          "401": {
-            "description": "Unauthorized"
-          },
           "404": {
             "description": "Not Found"
           },
@@ -2256,13 +2248,11 @@
     },
     "/api/health/analyze": {
       "get": {
+        "tags": [
+          "Financial-Health"
+        ],
         "description": "",
         "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          },
           {
             "name": "userId",
             "in": "query",
@@ -2270,14 +2260,38 @@
           }
         ],
         "responses": {
+          "0": {
+            "description": ""
+          },
+          "1": {
+            "description": ""
+          },
+          "2": {
+            "description": ""
+          },
+          "3": {
+            "description": ""
+          },
+          "4": {
+            "description": ""
+          },
+          "5": {
+            "description": ""
+          },
+          "6": {
+            "description": ""
+          },
+          "7": {
+            "description": ""
+          },
+          "8": {
+            "description": ""
+          },
           "200": {
             "description": "OK"
           },
           "400": {
             "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
           },
           "404": {
             "description": "Not Found"
