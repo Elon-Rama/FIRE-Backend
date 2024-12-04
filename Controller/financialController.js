@@ -447,12 +447,12 @@ await userFinancialData.save();
 // Send the response
 res.status(200).json({
   message: "Data analyzed and saved successfully",
-  data: {
+  data: [ {
     scores: userFinancialData.scores,
     overallScore: userFinancialData.overallScore,
     category: userFinancialData.category,
     description: userFinancialData.description,
-  },
+  }],
 });
   
 } catch (error) {
