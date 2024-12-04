@@ -56,10 +56,10 @@ exports.createFinancialData = async (req, res) => {
 };
 
 // exports.getUserFinancial = async (req, res) => {
+//   //#swagger.tags = ['Financial-Health']
 //   try {
 //     const { userId } = req.query;
 
-//     // Fetch financial data from the database
 //     const userFinancialData = await Financial.findOne({ userId });
 
 //     if (!userFinancialData) {
@@ -68,7 +68,15 @@ exports.createFinancialData = async (req, res) => {
 //         .json({ message: "Financial data not found for this user" });
 //     }
 
-//     const { income, expenses, monthlyEmi, emergencyFund, healthInsurance, lifeInsurance } = userFinancialData;
+//     const { 
+//       income, 
+//       expenses, 
+//       monthlyEmi, 
+//       emergencyFund, 
+//       healthInsurance, 
+//       lifeInsurance, 
+//       investments 
+//     } = userFinancialData;
 
 //     if (!income || !expenses || !monthlyEmi || !emergencyFund) {
 //       return res.status(400).json({
@@ -152,85 +160,143 @@ exports.createFinancialData = async (req, res) => {
 //       emergencyPoints = Math.floor(Math.random() * 25) + 76; // 76-100
 //     }
 
-//     // Calculate Insurance Coverage Adequacy
-//     const totalHealthInsurance = parseFloat(healthInsurance || 0);
-//     const totalLifeInsurance = parseFloat(lifeInsurance || 0);
+//     // Calculate Insurance Coverage
 //     const annualIncome = monthlyIncome * 12;
+//     const healthInsuranceCoverage = parseFloat(healthInsurance || 0);
+//     const lifeInsuranceCoverage = parseFloat(lifeInsurance || 0);
 
 //     let insuranceStatus = "";
 //     let insurancePoints = 0;
 
-//     if (totalHealthInsurance === 0 && totalLifeInsurance === 0) {
+//     const isAdequateHealthInsurance =
+//       healthInsuranceCoverage >= monthlyIncome * 5 && healthInsuranceCoverage <= monthlyIncome * 10;
+
+//     const isAdequateLifeInsurance =
+//       lifeInsuranceCoverage >= annualIncome * 10 && lifeInsuranceCoverage <= annualIncome * 20;
+
+//     if (!healthInsuranceCoverage && !lifeInsuranceCoverage) {
 //       insuranceStatus = "Poor";
 //       insurancePoints = Math.floor(Math.random() * 26); // 0-25
-//     } else if (
-//       totalHealthInsurance < 5 * monthlyIncome ||
-//       totalLifeInsurance < 10 * annualIncome
-//     ) {
+//     } else if (!isAdequateHealthInsurance || !isAdequateLifeInsurance) {
 //       insuranceStatus = "Needs Improvement";
 //       insurancePoints = Math.floor(Math.random() * 25) + 26; // 26-50
-//     } else if (
-//       totalHealthInsurance >= 5 * monthlyIncome &&
-//       totalHealthInsurance <= 10 * monthlyIncome &&
-//       totalLifeInsurance >= 10 * annualIncome &&
-//       totalLifeInsurance <= 20 * annualIncome
-//     ) {
+//     } else if (isAdequateHealthInsurance && isAdequateLifeInsurance) {
 //       insuranceStatus = "Good";
 //       insurancePoints = Math.floor(Math.random() * 25) + 51; // 51-75
 //     } else if (
-//       totalHealthInsurance > 10 * monthlyIncome &&
-//       totalLifeInsurance > 20 * annualIncome
+//       isAdequateHealthInsurance &&
+//       isAdequateLifeInsurance &&
+//       healthInsuranceCoverage > monthlyIncome * 10 &&
+//       lifeInsuranceCoverage > annualIncome * 20
 //     ) {
 //       insuranceStatus = "Excellent";
 //       insurancePoints = Math.floor(Math.random() * 25) + 76; // 76-100
 //     }
 
-//     // Return the result
+//     // Calculate Investment Diversification
+//     let diversificationStatus = "";
+//     let diversificationPoints = 0;
+
+//     if (investments && Array.isArray(investments)) {
+//       const uniqueAssets = new Set(investments);
+//       const diversifiedCount = uniqueAssets.size;
+
+//       if (diversifiedCount < 3) {
+//         diversificationStatus = "Poor";
+//         diversificationPoints = Math.floor(Math.random() * 26); // 0-25
+//       } else if (diversifiedCount === 3) {
+//         diversificationStatus = "Needs Improvement";
+//         diversificationPoints = Math.floor(Math.random() * 25) + 26; // 26-50
+//       } else if (diversifiedCount === 4) {
+//         diversificationStatus = "Good";
+//         diversificationPoints = Math.floor(Math.random() * 25) + 51; // 51-75
+//       } else if (diversifiedCount > 4) {
+//         diversificationStatus = "Excellent";
+//         diversificationPoints = Math.floor(Math.random() * 25) + 76; // 76-100
+//       }
+//     } else {
+//       diversificationStatus = "Poor";
+//       diversificationPoints = Math.floor(Math.random() * 26); // 0-25
+//     }
+
+//     // Response as an array
+//     const response = [
+//       {
+//         metric: "Savings Rate",
+//         value: savingsRate.toFixed(2),
+//         status: savingsStatus,
+//         points: savingsPoints,
+//       },
+//       {
+//         metric: "Debt-to-Income Ratio",
+//         value: dti.toFixed(2),
+//         status: dtiStatus,
+//         points: dtiPoints,
+//       },
+//       {
+//         metric: "Emergency Fund Adequacy",
+//         value: emergencyMonths.toFixed(2),
+//         status: emergencyStatus,
+//         points: emergencyPoints,
+//       },
+//       {
+//         metric: "Insurance Coverage",
+//         healthInsurance: healthInsuranceCoverage,
+//         lifeInsurance: lifeInsuranceCoverage,
+//         status: insuranceStatus,
+//         points: insurancePoints,
+//       },
+//       {
+//         metric: "Investment Diversification",
+//         status: diversificationStatus,
+//         points: diversificationPoints,
+//       },
+//     ];
+
 //     res.status(200).json({
 //       message: "Data retrieved successfully",
-//       data: {
-//         userId,
-//         savingsRate: savingsRate.toFixed(2),
-//         savingsStatus,
-//         savingsPoints,
-//         dti: dti.toFixed(2),
-//         dtiStatus,
-//         dtiPoints,
-//         emergencyMonths: emergencyMonths.toFixed(2),
-//         emergencyStatus,
-//         emergencyPoints,
-//         insurance: {
-//           healthInsurance: totalHealthInsurance,
-//           lifeInsurance: totalLifeInsurance,
-//           insuranceStatus,
-//           insurancePoints,
-//         },
-//       },
+//       data: response,
 //     });
 //   } catch (error) {
 //     console.error(error);
 //     res.status(500).json({ message: "Internal server error", error });
 //   }
 // };
+
+
+
+
+
 exports.getUserFinancial = async (req, res) => {
   //#swagger.tags = ['Financial-Health']
   try {
     const { userId } = req.query;
 
-    // Fetch financial data from the database
-    const userFinancialData = await Financial.findOne({ userId });
-
-    if (!userFinancialData) {
-      return res
-        .status(404)
-        .json({ message: "Financial data not found for this user" });
+    // Validate the userId
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
     }
 
-    const { income, expenses, monthlyEmi, emergencyFund, healthInsurance, lifeInsurance } = userFinancialData;
+    // Fetch financial data from the database
+    const userFinancialData = await Financial.findOne({ userId });
+    if (!userFinancialData) {
+      return res.status(404).json({ message: "Financial data not found for this user" });
+    }
 
+    const {
+      income,
+      expenses,
+      monthlyEmi,
+      emergencyFund,
+      healthInsurance,
+      lifeInsurance,
+      investments,
+    } = userFinancialData;
+
+    // Validate required financial fields
     if (!income || !expenses || !monthlyEmi || !emergencyFund) {
       return res.status(400).json({
-        message: "Income, expenses, EMI, or emergency fund data missing",
+        message: "Income, expenses, EMI, and emergency fund data are required",
       });
     }
 
@@ -239,6 +305,7 @@ exports.getUserFinancial = async (req, res) => {
     const monthlyDebtPayments = parseFloat(monthlyEmi);
     const totalEmergencyFund = parseFloat(emergencyFund);
 
+    // Validate numeric data
     if (
       isNaN(monthlyIncome) ||
       isNaN(monthlyExpenses) ||
@@ -250,136 +317,147 @@ exports.getUserFinancial = async (req, res) => {
       });
     }
 
-    // Calculate Savings Rate
+    // Calculations and Analysis
+    const calculatePoints = (status, range) => Math.floor(Math.random() * range) + status;
+
+    // Savings Rate
     const savingsRate = ((monthlyIncome - monthlyExpenses) / monthlyIncome) * 100;
+    const savings = [
+      { threshold: 30, status: "Excellent", range: 25, start: 76 },
+      { threshold: 20, status: "Good", range: 25, start: 51 },
+      { threshold: 10, status: "Needs Improvement", range: 25, start: 26 },
+      { threshold: 0, status: "Poor", range: 25, start: 0 },
+    ].find(({ threshold }) => savingsRate >= threshold);
+    const savingsStatus = savings?.status || "Poor";
+    const savingsPoints = calculatePoints(savings?.start || 0, savings?.range || 25);
 
-    let savingsStatus = "";
-    let savingsPoints = 0;
-
-    if (savingsRate < 10) {
-      savingsStatus = "Poor";
-      savingsPoints = Math.floor(Math.random() * 26); // 0-25
-    } else if (savingsRate >= 10 && savingsRate < 20) {
-      savingsStatus = "Needs Improvement";
-      savingsPoints = Math.floor(Math.random() * 25) + 26; // 26-50
-    } else if (savingsRate >= 20 && savingsRate < 30) {
-      savingsStatus = "Good";
-      savingsPoints = Math.floor(Math.random() * 25) + 51; // 51-75
-    } else if (savingsRate >= 30) {
-      savingsStatus = "Excellent";
-      savingsPoints = Math.floor(Math.random() * 25) + 76; // 76-100
-    }
-
-    // Calculate Debt-to-Income Ratio (DTI)
+    // Debt-to-Income Ratio (DTI)
     const dti = (monthlyDebtPayments / monthlyIncome) * 100;
+    const debt = [
+      { threshold: 10, status: "Excellent", range: 25, start: 76 },
+      { threshold: 30, status: "Good", range: 25, start: 51 },
+      { threshold: 50, status: "Needs Improvement", range: 25, start: 26 },
+      { threshold: 100, status: "Poor", range: 25, start: 0 },
+    ].find(({ threshold }) => dti < threshold);
+    const dtiStatus = debt?.status || "Poor";
+    const dtiPoints = calculatePoints(debt?.start || 0, debt?.range || 25);
 
-    let dtiStatus = "";
-    let dtiPoints = 0;
-
-    if (dti >= 50) {
-      dtiStatus = "Poor";
-      dtiPoints = Math.floor(Math.random() * 26); // 0-25
-    } else if (dti >= 30 && dti < 50) {
-      dtiStatus = "Needs Improvement";
-      dtiPoints = Math.floor(Math.random() * 25) + 26; // 26-50
-    } else if (dti >= 10 && dti < 30) {
-      dtiStatus = "Good";
-      dtiPoints = Math.floor(Math.random() * 25) + 51; // 51-75
-    } else if (dti < 10) {
-      dtiStatus = "Excellent";
-      dtiPoints = Math.floor(Math.random() * 25) + 76; // 76-100
-    }
-
-    // Calculate Emergency Fund Adequacy
+    // Emergency Fund Adequacy
     const emergencyMonths = totalEmergencyFund / monthlyExpenses;
+    const emergency = [
+      { threshold: 6, status: "Excellent", range: 25, start: 76 },
+      { threshold: 3, status: "Good", range: 25, start: 51 },
+      { threshold: 1, status: "Needs Improvement", range: 25, start: 26 },
+      { threshold: 0, status: "Poor", range: 25, start: 0 },
+    ].find(({ threshold }) => emergencyMonths >= threshold);
+    const emergencyStatus = emergency?.status || "Poor";
+    const emergencyPoints = calculatePoints(emergency?.start || 0, emergency?.range || 25);
 
-    let emergencyStatus = "";
-    let emergencyPoints = 0;
-
-    if (emergencyMonths < 1) {
-      emergencyStatus = "Poor";
-      emergencyPoints = Math.floor(Math.random() * 26); // 0-25
-    } else if (emergencyMonths >= 1 && emergencyMonths < 3) {
-      emergencyStatus = "Needs Improvement";
-      emergencyPoints = Math.floor(Math.random() * 25) + 26; // 26-50
-    } else if (emergencyMonths >= 3 && emergencyMonths < 6) {
-      emergencyStatus = "Good";
-      emergencyPoints = Math.floor(Math.random() * 25) + 51; // 51-75
-    } else if (emergencyMonths >= 6) {
-      emergencyStatus = "Excellent";
-      emergencyPoints = Math.floor(Math.random() * 25) + 76; // 76-100
-    }
-
-    // Calculate Insurance Coverage
+    // Insurance Coverage
     const annualIncome = monthlyIncome * 12;
     const healthInsuranceCoverage = parseFloat(healthInsurance || 0);
     const lifeInsuranceCoverage = parseFloat(lifeInsurance || 0);
-
-    let insuranceStatus = "";
-    let insurancePoints = 0;
-
     const isAdequateHealthInsurance =
       healthInsuranceCoverage >= monthlyIncome * 5 && healthInsuranceCoverage <= monthlyIncome * 10;
-
     const isAdequateLifeInsurance =
       lifeInsuranceCoverage >= annualIncome * 10 && lifeInsuranceCoverage <= annualIncome * 20;
 
-    if (!healthInsuranceCoverage && !lifeInsuranceCoverage) {
-      insuranceStatus = "Poor";
-      insurancePoints = Math.floor(Math.random() * 26); // 0-25
-    } else if (!isAdequateHealthInsurance || !isAdequateLifeInsurance) {
-      insuranceStatus = "Needs Improvement";
-      insurancePoints = Math.floor(Math.random() * 25) + 26; // 26-50
-    } else if (isAdequateHealthInsurance && isAdequateLifeInsurance) {
-      insuranceStatus = "Good";
-      insurancePoints = Math.floor(Math.random() * 25) + 51; // 51-75
-    } else if (
-      isAdequateHealthInsurance &&
-      isAdequateLifeInsurance &&
-      healthInsuranceCoverage > monthlyIncome * 10 &&
-      lifeInsuranceCoverage > annualIncome * 20
-    ) {
-      insuranceStatus = "Excellent";
-      insurancePoints = Math.floor(Math.random() * 25) + 76; // 76-100
-    }
+    const insuranceStatus =
+      !healthInsuranceCoverage && !lifeInsuranceCoverage
+        ? "Poor"
+        : isAdequateHealthInsurance && isAdequateLifeInsurance
+        ? "Excellent"
+        : "Needs Improvement";
+    const insurancePoints = calculatePoints(
+      insuranceStatus === "Excellent" ? 76 : 26,
+      insuranceStatus === "Excellent" ? 25 : 25
+    );
 
-    // Response as an array
-    const response = [
-      {
-        metric: "Savings Rate",
-        value: savingsRate.toFixed(2),
-        status: savingsStatus,
-        points: savingsPoints,
-      },
-      {
-        metric: "Debt-to-Income Ratio",
-        value: dti.toFixed(2),
-        status: dtiStatus,
-        points: dtiPoints,
-      },
-      {
-        metric: "Emergency Fund Adequacy",
-        value: emergencyMonths.toFixed(2),
-        status: emergencyStatus,
-        points: emergencyPoints,
-      },
-      {
-        metric: "Insurance Coverage",
-        healthInsurance: healthInsuranceCoverage,
-        lifeInsurance: lifeInsuranceCoverage,
-        status: insuranceStatus,
-        points: insurancePoints,
-      },
-    ];
+    // Investment Diversification
+    const diversificationStatus =
+      investments?.length > 4
+        ? "Excellent"
+        : investments?.length === 4
+        ? "Good"
+        : investments?.length === 3
+        ? "Needs Improvement"
+        : "Poor";
+    const diversificationPoints = calculatePoints(
+      diversificationStatus === "Excellent" ? 76 : 26,
+      diversificationStatus === "Excellent" ? 25 : 25
+    );
 
-    res.status(200).json({
-      message: "Data retrieved successfully",
-      data: response,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error", error });
-  }
+//     // Save scores and statuses in the database
+//     userFinancialData.scores = [ {
+//       savingsRate: { value: savingsRate.toFixed(2), status: savingsStatus, points: savingsPoints },
+//       debtToIncomeRatio: { value: dti.toFixed(2), status: dtiStatus, points: dtiPoints },
+//       emergencyFund: { value: emergencyMonths.toFixed(2), status: emergencyStatus, points: emergencyPoints },
+//       insuranceCoverage: { healthInsuranceCoverage, lifeInsuranceCoverage, status: insuranceStatus, points: insurancePoints },
+//       investmentDiversification: { status: diversificationStatus, points: diversificationPoints },
+//     }];
+
+//     await userFinancialData.save();
+
+//     res.status(200).json({ message: "Data analyzed and saved successfully", data: userFinancialData.scores });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Internal server error", error });
+//   }
+// };
+// Assign weights to each metric
+const weights = {
+  savingsRate: 0.3,
+  debtToIncomeRatio: 0.2,
+  emergencyFund: 0.2,
+  insuranceCoverage: 0.15,
+  investmentDiversification: 0.15,
 };
 
+// Calculate the overall score
+const overallScore =
+  (savingsPoints * weights.savingsRate) +
+  (dtiPoints * weights.debtToIncomeRatio) +
+  (emergencyPoints * weights.emergencyFund) +
+  (insurancePoints * weights.insuranceCoverage) +
+  (diversificationPoints * weights.investmentDiversification);
+
+// Categorize the overall score
+let category, description;
+if (overallScore <= 40) {
+  category = "Poor";
+  description = "Financial distress; immediate changes needed.";
+} else if (overallScore <= 60) {
+  category = "Fair";
+  description = "Needs improvement; some metrics are healthy, others need attention.";
+} else if (overallScore <= 80) {
+  category = "Good";
+  description = "Financially stable with room to improve.";
+} else {
+  category = "Excellent";
+  description = "Strong financial position with all metrics in check.";
+}
+
+// Save the overall score and category to the database
+userFinancialData.overallScore = overallScore.toFixed(2);
+userFinancialData.category = category;
+userFinancialData.description = description;
+
+await userFinancialData.save();
+
+// Send the response
+res.status(200).json({
+  message: "Data analyzed and saved successfully",
+  data: {
+    scores: userFinancialData.scores,
+    overallScore: userFinancialData.overallScore,
+    category: userFinancialData.category,
+    description: userFinancialData.description,
+  },
+});
+  
+} catch (error) {
+  console.error(error);
+  res.status(500).json({ message: "Internal server error", error });
+}
+};
 

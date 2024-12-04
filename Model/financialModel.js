@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 
 const financialSchema = new mongoose.Schema({
@@ -66,7 +65,17 @@ const financialSchema = new mongoose.Schema({
             type: String,
             default: '0'
         }
-    }
+    },
+    scores: [{
+        savingsRate: Object,
+        debtToIncomeRatio: Object,
+        emergencyFund: Object,
+        insuranceCoverage: Object,
+        investmentDiversification: Object,
+    }],
+    overallScore: Number,
+  category: String,
+  description: String,
 });
 
 module.exports = mongoose.model('Financial', financialSchema);
