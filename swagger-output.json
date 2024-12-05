@@ -2194,9 +2194,6 @@
     },
     "/api/health/create": {
       "post": {
-        "tags": [
-          "Financial-Health"
-        ],
         "description": "",
         "parameters": [
           {
