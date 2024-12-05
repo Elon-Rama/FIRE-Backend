@@ -75,18 +75,15 @@
 const mongoose = require('mongoose');
 
 const financialSchema = new mongoose.Schema({
-  userId: { type: String, required: true, unique: true },
-  income: { type: Number, required: true },
-  expenses: { type: Number, required: true },
-  debtAmount: { type: Number, required: true },
-  monthlyEmi: { type: Number, required: true },
-  insurance: { type: String, enum: ['Health', 'Terms', 'Both'], required: true },
-  emergencyFund: { type: Number, required: true },
-  investments: {
-    type: [String],
-    enum: ['Stocks', 'Gold', 'RealEstate', 'Bonds', 'MutualFund', 'Others'],
-    required: true,
-  },
-}, { timestamps: true });
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
+  income: { type: Number, default: 0 },
+  expenses: { type: Number, default: 0 },
+  debtAmount: { type: Number, default: 0 },
+  monthlyEmi: { type: Number, default: 0 },
+  insurance: { type: String, enum: ['Health', 'Terms', 'Both'], default: 'None' },
+  emergencyFund: { type: Number, default: 0 },
+  investments: { type: [String],enum: ['Stocks', 'Gold', 'RealEstate', 'Bonds', 'MutualFund', 'Others'], default: [] },
+  createdAt: { type: Date, default: Date.now }
+});
 
 module.exports = mongoose.model('Financial', financialSchema);
