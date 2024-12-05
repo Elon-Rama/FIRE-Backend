@@ -2297,6 +2297,11 @@
             "name": "authorization",
             "in": "header",
             "type": "string"
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "type": "string"
           }
         ],
         "responses": {

@@ -36,7 +36,7 @@ exports.saveRiskProfile = async (req, res) => {
         if (totalScore <= 10) riskProfile = 'Conservative Risk Profile (Low risk tolerance)';
         else if (totalScore <= 15) riskProfile = 'Moderate Conservative Risk Profile';
         else if (totalScore <= 20) riskProfile = 'Balanced Risk Profile';
-        else if (totalScore <= 25) riskProfile = 'Aggressive Risk Profile';
+        else if (totalScore <= 28) riskProfile = 'Aggressive Risk Profile';
         else riskProfile = 'Very Aggressive Risk Profile (High risk tolerance)';
 
         // Save to database
@@ -54,13 +54,13 @@ exports.saveRiskProfile = async (req, res) => {
 exports.getRiskProfile = async (req, res) => {
     //#swagger.tags = ['PersonalRisk-Tolerance]
     try {
-        const { userId } = req.params;
+        const { userId } = req.query;
 
         if (!userId) {
             return res.status(400).json({ message: 'User ID is required' });
         }
 
-        const riskData = await Risk.findOne({ userId });
+        const riskData = await PersonalRisk.findOne({ userId });
         if (!riskData) {
             return res.status(404).json({ message: 'Risk profile not found' });
         }
