@@ -1,17 +1,27 @@
-// riskModel.js
-const mongoose = require('mongoose');
+
+const mongoose = require("mongoose");
 
 const riskSchema = new mongoose.Schema({
-    userId: { type: String, required: true }, // Unique ID for user
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
     answers: [
         {
-            question: String,
+            question: Number,
             answer: String,
-            points: Number,
-        },
+            points: Number
+        }
     ],
-    totalScore: { type: Number, required: true },
-    riskProfile: { type: String, required: true },
+    totalScore: {
+        type: Number,
+        required: true
+    },
+    riskProfile: {
+        type: String,
+        required: true
+    }
 }, { timestamps: true });
 
-module.exports = mongoose.model('PersonalRisk', riskSchema);
+module.exports = mongoose.model("Risk", riskSchema);
