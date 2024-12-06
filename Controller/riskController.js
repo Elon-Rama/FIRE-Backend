@@ -73,33 +73,68 @@ exports.saveRiskProfile = async (req, res) => {
   }
 };
 
+// exports.getRiskProfile = async (req, res) => {
+//   //#swagger.tags = ['PersonalRisk-Tolerance']
+//   try {
+//     const { userId } = req.query;
+
+//     const riskData = await Risk.findOne({ userId });
+
+//     if (!riskData) {
+//       return res.status(404).json({
+//         statuscode: "1",
+//         message: "No risk profile found for this user",
+//       });
+//     }
+
+//     res.status(200).json({
+//       statuscode: "0",
+//       message: "Data retrieved successfully",
+//       userId: riskData.userId,
+//       data: riskData.answers,
+//       totalScore: riskData.totalScore,
+//       status: riskData.riskProfile,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       statuscode: "1",
+//       message: "An error occurred",
+//       error: error.message,
+//     });
+//   }
+// };
 exports.getRiskProfile = async (req, res) => {
-  //#swagger.tags = ['PersonalRisk-Tolerance']
-  try {
-    const { userId } = req.query;
-
-    const riskData = await Risk.findOne({ userId });
-
-    if (!riskData) {
-      return res.status(404).json({
+    //#swagger.tags = ['PersonalRisk-Tolerance']
+    try {
+      const { userId } = req.query;
+  
+      // Find the most recent risk profile for the given user, sorted by createdAt in descending order
+      const riskData = await Risk.find({ userId }).sort({ createdAt: -1 }).limit(1);
+  
+      if (!riskData || riskData.length === 0) {
+        return res.status(404).json({
+          statuscode: "1",
+          message: "No risk profile found for this user",
+        });
+      }
+  
+      // Since we're using .find().sort().limit(1), riskData is an array, so we need to access the first element
+      const latestRiskData = riskData[0];
+  
+      res.status(200).json({
+        statuscode: "0",
+        message: "Data retrieved successfully",
+        userId: latestRiskData.userId,
+        data: latestRiskData.answers,
+        totalScore: latestRiskData.totalScore,
+        status: latestRiskData.riskProfile,
+      });
+    } catch (error) {
+      res.status(500).json({
         statuscode: "1",
-        message: "No risk profile found for this user",
+        message: "An error occurred",
+        error: error.message,
       });
     }
-
-    res.status(200).json({
-      statuscode: "0",
-      message: "Data retrieved successfully",
-      userId: riskData.userId,
-      data: riskData.answers,
-      totalScore: riskData.totalScore,
-      status: riskData.riskProfile,
-    });
-  } catch (error) {
-    res.status(500).json({
-      statuscode: "1",
-      message: "An error occurred",
-      error: error.message,
-    });
-  }
-};
+  };
+  
