@@ -72,7 +72,7 @@ const financialSchema = new mongoose.Schema({
   },
   insurance: { 
     type: String, 
-    // enum: ["None", "Health", "Terms"], 
+    enum: ["None", "Health", "Terms", "Both"], 
     default: "None" 
   },
   
