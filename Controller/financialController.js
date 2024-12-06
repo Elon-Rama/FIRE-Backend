@@ -261,17 +261,18 @@ exports.getUserFinancial = async (req, res) => {
     else emergencyFundScore = { status: "Excellent", points: 100 };
 
     const hasHealth = insurance.includes("Health");
-    const hasTerms = insurance.includes("Terms");
-    const hasBoth = hasHealth && hasTerms;
+const hasTerms = insurance.includes("Terms");
+const hasBoth = insurance.includes("Both");
 
-    let insuranceScore = { status: "Poor", points: 0 };
-    if (hasBoth) {
-      insuranceScore = { status: "Excellent", points: 100 };
-    } else if (hasHealth || hasTerms) {
-      insuranceScore = { status: "Fair", points: 50 };
-    } else {
-      insuranceScore = { status: "Poor", points: 0 };
-    }
+let insuranceScore = { status: "Poor", points: 0 };
+if (hasBoth) {
+  insuranceScore = { status: "Excellent", points: 100 };
+} else if (hasHealth || hasTerms) {
+  insuranceScore = { status: "Fair", points: 50 };
+} else {
+  insuranceScore = { status: "Poor", points: 0 };
+}
+
 
     const uniqueInvestments = [...new Set(investments)];
     let investmentScore = { status: "Poor", points: 0 };
