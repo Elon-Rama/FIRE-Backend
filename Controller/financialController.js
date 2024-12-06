@@ -69,26 +69,69 @@ exports.getUserFinancial = async (req, res) => {
       investments = [],
     } = userData;
 
-    // calculation Savings Rate
-    const savingsRate = income ? ((income - expenses) / income) * 100 : 0;
-    let savingsScore = { status: "Needs Improvement", points: 0 };
-    if (savingsRate < 10)
-      savingsScore = { status: "Needs Improvement", points: 25 };
-    else if (savingsRate >= 10 && savingsRate < 20)
-      savingsScore = { status: "Fair", points: 50 };
-    else if (savingsRate >= 20 && savingsRate < 30)
-      savingsScore = { status: "Good", points: 73 };
-    else savingsScore = { status: "Excellent", points: 100 };
+    // // calculation Savings Rate
+    // const savingsRate = income ? ((income - expenses) / income) * 100 : 0;
+    // let savingsScore = { status: "Needs Improvement", points: 0 };
+    // if (savingsRate < 10)
+    //   savingsScore = { status: "Needs Improvement", points: 25 };
+    // else if (savingsRate >= 10 && savingsRate < 20)
+    //   savingsScore = { status: "Fair", points: 50 };
+    // else if (savingsRate >= 20 && savingsRate < 30)
+    //   savingsScore = { status: "Good", points: 73 };
+    // else savingsScore = { status: "Excellent", points: 100 };
+    // Calculate Savings Rate
+let savingsRate = 0;
+let savingsScore = { status: "Poor", points: 0 };
 
-    //calculation debt-to-incomeRation
-    const debtToIncomeRatio = income ? (monthlyEmi / income) * 100 : 0;
-    let debtScore = { status: "Poor", points: 0 };
-    if (debtToIncomeRatio > 50) debtScore = { status: "Poor", points: 25 };
-    else if (debtToIncomeRatio >= 30 && debtToIncomeRatio <= 50)
-      debtScore = { status: "Fair", points: 50 };
-    else if (debtToIncomeRatio >= 10 && debtToIncomeRatio < 30)
-      debtScore = { status: "Good", points: 75 };
-    else debtScore = { status: "Excellent", points: 82 };
+// Check if income and expenses are provided and valid
+if (income != null && expenses != null && income > 0) {
+    savingsRate = ((income - expenses) / income) * 100;
+
+    if (savingsRate < 10) {
+        savingsScore = { status: "Needs Improvement", points: 25 };
+    } else if (savingsRate >= 10 && savingsRate < 20) {
+        savingsScore = { status: "Fair", points: 50 };
+    } else if (savingsRate >= 20 && savingsRate < 30) {
+        savingsScore = { status: "Good", points: 73 };
+    } else {
+        savingsScore = { status: "Excellent", points: 100 };
+    }
+}
+
+// Set the savingsRate value as a string with two decimal places
+const savingsRateFormatted = savingsRate.toFixed(2);
+
+    // //calculation debt-to-incomeRation
+    // const debtToIncomeRatio = income ? (monthlyEmi / income) * 100 : 0;
+    // let debtScore = { status: "Poor", points: 0 };
+    // if (debtToIncomeRatio > 50) debtScore = { status: "Poor", points: 25 };
+    // else if (debtToIncomeRatio >= 30 && debtToIncomeRatio <= 50)
+    //   debtScore = { status: "Fair", points: 50 };
+    // else if (debtToIncomeRatio >= 10 && debtToIncomeRatio < 30)
+    //   debtScore = { status: "Good", points: 75 };
+    // else debtScore = { status: "Excellent", points: 82 };
+    // Calculate Debt-to-Income Ratio
+let debtToIncomeRatio = 0;
+let debtScore = { status: "Poor", points: 0 };
+
+// Check if income and monthlyEmi are provided and valid
+if (income != null && monthlyEmi != null && income > 0) {
+    debtToIncomeRatio = (monthlyEmi / income) * 100;
+
+    if (debtToIncomeRatio > 50) {
+        debtScore = { status: "Poor", points: 25 };
+    } else if (debtToIncomeRatio >= 30 && debtToIncomeRatio <= 50) {
+        debtScore = { status: "Fair", points: 50 };
+    } else if (debtToIncomeRatio >= 10 && debtToIncomeRatio < 30) {
+        debtScore = { status: "Good", points: 75 };
+    } else {
+        debtScore = { status: "Excellent", points: 82 };
+    }
+}
+
+// Set the debtToIncomeRatio value as a string with two decimal places
+const debtToIncomeRatioFormatted = debtToIncomeRatio.toFixed(2);
+
 
     //calculation for emergency Fund
     const emergencyMonths = expenses ? emergencyFund / expenses : 0;
@@ -175,8 +218,8 @@ exports.getUserFinancial = async (req, res) => {
     await userData.save();
 
     return res.status(200).json({
-      message: "Financial health data retrieved and updated successfully",
-      data: {
+      message: "Financial health data retrieved successfully",
+      data: [ {
         metrics: [
           {
             metric: "Savings Rate",
@@ -215,7 +258,7 @@ exports.getUserFinancial = async (req, res) => {
               improvementRecommendations.join(", ") || "No improvement needed.",
           },
         ],
-      },
+      }],
     });
   } catch (error) {
     console.error("Error retrieving or updating financial record:", error);
