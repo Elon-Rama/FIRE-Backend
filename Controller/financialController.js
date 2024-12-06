@@ -2,49 +2,44 @@ const Financial = require("../Model/financialModel");
 const User = require("../Model/emailModel");
 
 exports.createFinancialData = async (req, res) => {
-  const {
-    userId,
-    income = 0,
-    expenses = 0,
-    debtAmount = 0,
-    monthlyEmi = 0,
-    insurance = ['None'],
-    emergencyFund = 0,
-    investments = [],
-  } = req.body;
-
-
+  //#swagger.tags = ['Financial-Health']
   try {
+    const {
+      userId,
+      income = 0,
+      expenses = 0,
+      debtAmount = 0,
+      monthlyEmi = 0,
+      insurance = "None",
+      emergencyFund = 0,
+      investments = [],
+    } = req.body;
+
     const userExists = await User.findById(userId);
     if (!userExists) {
-      return res.status(400).json({ message: "Invalid user ID" });
+      return res.status(404).json({ error: "User not found" });
     }
 
-    const existingData = await Financial.findOne({ userId });
-    if (existingData) {
-      return res
-        .status(400)
-        .json({ message: "Financial data already exists for this user" });
-    }
-
-    const newFinancialData = new Financial({
+    const financialData = new Financial({
       userId,
       income,
       expenses,
       debtAmount,
       monthlyEmi,
-      insurance: insurance.length ? insurance : ['None'],
+      insurance,
       emergencyFund,
       investments,
     });
 
-    await newFinancialData.save();
-    res.status(201).json({
-      message: "Financial data created successfully",
-      data: newFinancialData,
+    const savedRecord = await financialData.save();
+
+    return res.status(201).json({
+      message: "Financial health record created successfully",
+      data: savedRecord,
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    console.error("Error creating financial record:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -77,9 +72,12 @@ exports.getUserFinancial = async (req, res) => {
     // Calculate individual scores with default initialization
     const savingsRate = income ? ((income - expenses) / income) * 100 : 0;
     let savingsScore = { status: "Needs Improvement", points: 0 };
-    if (savingsRate < 10) savingsScore = { status: "Needs Improvement", points: 25 };
-    else if (savingsRate >= 10 && savingsRate < 20) savingsScore = { status: "Fair", points: 50 };
-    else if (savingsRate >= 20 && savingsRate < 30) savingsScore = { status: "Good", points: 73 };
+    if (savingsRate < 10)
+      savingsScore = { status: "Needs Improvement", points: 25 };
+    else if (savingsRate >= 10 && savingsRate < 20)
+      savingsScore = { status: "Fair", points: 50 };
+    else if (savingsRate >= 20 && savingsRate < 30)
+      savingsScore = { status: "Good", points: 73 };
     else savingsScore = { status: "Excellent", points: 100 };
 
     const debtToIncomeRatio = income ? (monthlyEmi / income) * 100 : 0;
@@ -93,24 +91,34 @@ exports.getUserFinancial = async (req, res) => {
 
     const emergencyMonths = expenses ? emergencyFund / expenses : 0;
     let emergencyFundScore = { status: "Poor", points: 0 };
-    if (emergencyMonths < 1) emergencyFundScore = { status: "Poor", points: 15 };
+    if (emergencyMonths < 1)
+      emergencyFundScore = { status: "Poor", points: 15 };
     else if (emergencyMonths >= 1 && emergencyMonths < 3)
       emergencyFundScore = { status: "Needs Improvement", points: 43 };
     else if (emergencyMonths >= 3 && emergencyMonths < 6)
       emergencyFundScore = { status: "Good", points: 70 };
     else emergencyFundScore = { status: "Excellent", points: 100 };
 
-    let insuranceScore = { status: "Poor", points: 0 };
-    if (insurance === "None") insuranceScore = { status: "Poor", points: 0 };
-    else if (insurance === "Health" || insurance === "Terms")
+    const hasHealth = insurance.includes("Health");
+    const hasTerms = insurance.includes("Terms");
+    const hasBoth = hasHealth && hasTerms;
+
+    if (hasBoth) {
+      insuranceScore = { status: "Excellent", points: 100 };
+    } else if (hasHealth || hasTerms) {
       insuranceScore = { status: "Fair", points: 50 };
-    else if (insurance === "Both") insuranceScore = { status: "Excellent", points: 100 };
+    } else {
+      insuranceScore = { status: "Poor", points: 0 };
+    }
 
     const uniqueInvestments = [...new Set(investments)];
     let investmentScore = { status: "Poor", points: 0 };
-    if (uniqueInvestments.length < 3) investmentScore = { status: "Poor", points: 10 };
-    else if (uniqueInvestments.length === 3) investmentScore = { status: "Fair", points: 50 };
-    else if (uniqueInvestments.length > 3) investmentScore = { status: "Excellent", points: 100 };
+    if (uniqueInvestments.length < 3)
+      investmentScore = { status: "Poor", points: 10 };
+    else if (uniqueInvestments.length === 3)
+      investmentScore = { status: "Fair", points: 50 };
+    else if (uniqueInvestments.length > 3)
+      investmentScore = { status: "Excellent", points: 100 };
 
     /// Calculate final score
     const finalScore =
@@ -138,23 +146,56 @@ exports.getUserFinancial = async (req, res) => {
     }
 
     let improvementRecommendations = [];
-    if (savingsScore.points < 50) improvementRecommendations.push("Savings Rate");
-    if (debtScore.points < 50) improvementRecommendations.push("Debt-to-Income Ratio");
+    if (savingsScore.points < 50)
+      improvementRecommendations.push("Savings Rate");
+    if (debtScore.points < 50)
+      improvementRecommendations.push("Debt-to-Income Ratio");
     if (emergencyFundScore.points < 50)
       improvementRecommendations.push("Emergency Fund Adequacy");
-    if (insuranceScore.points < 50) improvementRecommendations.push("Insurance Coverage");
+    if (insuranceScore.points < 50)
+      improvementRecommendations.push("Insurance Coverage");
     if (investmentScore.points < 50)
       improvementRecommendations.push("Investment Diversification");
 
     const response = {
       message: "Data retrieved successfully",
       data: [
-        { metric: "Savings Rate", value: savingsRate.toFixed(2), status: savingsScore.status, points: savingsScore.points },
-        { metric: "Debt-to-Income Ratio", value: debtToIncomeRatio.toFixed(2), status: debtScore.status, points: debtScore.points },
-        { metric: "Emergency Fund Adequacy", value: emergencyMonths.toFixed(2), status: emergencyFundScore.status, points: emergencyFundScore.points },
-        { metric: "Insurance Coverage", status: insuranceScore.status, points: insuranceScore.points },
-        { metric: "Investment Diversification", status: investmentScore.status, points: investmentScore.points },
-        { metric: "Overall Score", value: finalScore.toFixed(2), status: overallStatus, description, recommendation: improvementRecommendations.join(", ") || "No improvement needed." },
+        {
+          metric: "Savings Rate",
+          value: savingsRate.toFixed(2),
+          status: savingsScore.status,
+          points: savingsScore.points,
+        },
+        {
+          metric: "Debt-to-Income Ratio",
+          value: debtToIncomeRatio.toFixed(2),
+          status: debtScore.status,
+          points: debtScore.points,
+        },
+        {
+          metric: "Emergency Fund Adequacy",
+          value: emergencyMonths.toFixed(2),
+          status: emergencyFundScore.status,
+          points: emergencyFundScore.points,
+        },
+        {
+          metric: "Insurance Coverage",
+          status: insuranceScore.status,
+          points: insuranceScore.points,
+        },
+        {
+          metric: "Investment Diversification",
+          status: investmentScore.status,
+          points: investmentScore.points,
+        },
+        {
+          metric: "Overall Score",
+          value: finalScore.toFixed(2),
+          status: overallStatus,
+          description,
+          recommendation:
+            improvementRecommendations.join(", ") || "No improvement needed.",
+        },
       ],
     };
 
@@ -164,4 +205,3 @@ exports.getUserFinancial = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
-

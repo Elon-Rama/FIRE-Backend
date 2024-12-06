@@ -10,6 +10,7 @@ const ExpensesMaster = require("../../Model/masterExpensesModel");
 const ExpensesAllocation = require("../../Model/ExpensesAllocation");
 const ChildExpenses = require("../../Model/ChildExpensesModel");
 const FireQuestion = require('../../Model/fireModel');
+const Financial = require('../../Model/financialModel');
 const cryptr = new Cryptr(process.env.JWT_SECRET);
 
 const transporter = nodemailer.createTransport({
@@ -305,6 +306,7 @@ exports.verifyOTP = async (req, res) => {
     }
     const userProfile = await Profile.findOne({ userId: user._id });
     const userFire = await FireQuestion.findOne({userId : user._id});
+    const userFinancial = await Financial.findOne({userId : user._id});
 
     res.status(201).json({
       success: true,
@@ -316,6 +318,7 @@ exports.verifyOTP = async (req, res) => {
       userId: user._id,
       userProfile: !!userProfile,
       userFire: !!userFire,
+      userFinancial: !!userFinancial
     });
   } catch (err) {
     console.error(err);

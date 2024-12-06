@@ -2194,6 +2194,9 @@
     },
     "/api/health/create": {
       "post": {
+        "tags": [
+          "Financial-Health"
+        ],
         "description": "",
         "parameters": [
           {
@@ -2239,11 +2242,11 @@
           "201": {
             "description": "Created"
           },
-          "400": {
-            "description": "Bad Request"
-          },
           "401": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
           },
           "500": {
             "description": "Internal Server Error"
