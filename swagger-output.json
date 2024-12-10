@@ -246,10 +246,19 @@
                 "gender": {
                   "example": "any"
                 },
+                "address": {
+                  "example": "any"
+                },
+                "city": {
+                  "example": "any"
+                },
+                "occupation": {
+                  "example": "any"
+                },
                 "contactNumber": {
                   "example": "any"
                 },
-                "interestedInFhir": {
+                "interestedInFIFP": {
                   "example": "any"
                 }
               }
@@ -401,10 +410,19 @@
                 "gender": {
                   "example": "any"
                 },
+                "address": {
+                  "example": "any"
+                },
+                "city": {
+                  "example": "any"
+                },
+                "occupation": {
+                  "example": "any"
+                },
                 "contactNumber": {
                   "example": "any"
                 },
-                "interestedInFhir": {
+                "interestedInFIFP": {
                   "example": "any"
                 }
               }
@@ -446,12 +464,6 @@
               "type": "object",
               "properties": {
                 "userId": {
-                  "example": "any"
-                },
-                "occupation": {
-                  "example": "any"
-                },
-                "city": {
                   "example": "any"
                 },
                 "age": {

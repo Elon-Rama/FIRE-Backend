@@ -7,14 +7,14 @@ const FireQuestionSchema = new mongoose.Schema({
     ref: "User",  
     required: true,
   },
-  occupation: {
-    type: String,
-    required: true,
-  },
-  city: {
-    type: String,
-    required: true,
-  },
+  // occupation: {
+  //   type: String,
+  //   required: true,
+  // },
+  // city: {
+  //   type: String,
+  //   required: true,
+  // },
   age: {
     type: Number,
     required: true,

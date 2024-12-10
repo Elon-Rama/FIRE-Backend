@@ -69,17 +69,7 @@ exports.getUserFinancial = async (req, res) => {
       investments = [],
     } = userData;
 
-    // // calculation Savings Rate
-    // const savingsRate = income ? ((income - expenses) / income) * 100 : 0;
-    // let savingsScore = { status: "Needs Improvement", points: 0 };
-    // if (savingsRate < 10)
-    //   savingsScore = { status: "Needs Improvement", points: 25 };
-    // else if (savingsRate >= 10 && savingsRate < 20)
-    //   savingsScore = { status: "Fair", points: 50 };
-    // else if (savingsRate >= 20 && savingsRate < 30)
-    //   savingsScore = { status: "Good", points: 73 };
-    // else savingsScore = { status: "Excellent", points: 100 };
-    // Calculate Savings Rate
+    
 let savingsRate = 0;
 let savingsScore = { status: "Poor", points: 0 };
 
@@ -101,16 +91,7 @@ if (income != null && expenses != null && income > 0) {
 // Set the savingsRate value as a string with two decimal places
 const savingsRateFormatted = savingsRate.toFixed(2);
 
-    // //calculation debt-to-incomeRation
-    // const debtToIncomeRatio = income ? (monthlyEmi / income) * 100 : 0;
-    // let debtScore = { status: "Poor", points: 0 };
-    // if (debtToIncomeRatio > 50) debtScore = { status: "Poor", points: 25 };
-    // else if (debtToIncomeRatio >= 30 && debtToIncomeRatio <= 50)
-    //   debtScore = { status: "Fair", points: 50 };
-    // else if (debtToIncomeRatio >= 10 && debtToIncomeRatio < 30)
-    //   debtScore = { status: "Good", points: 75 };
-    // else debtScore = { status: "Excellent", points: 82 };
-    // Calculate Debt-to-Income Ratio
+    
 let debtToIncomeRatio = 0;
 let debtScore = { status: "Poor", points: 0 };
 

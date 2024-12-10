@@ -108,7 +108,7 @@ exports.getRiskProfile = async (req, res) => {
     try {
       const { userId } = req.query;
   
-      // Find the most recent risk profile for the given user, sorted by createdAt in descending order
+      
       const riskData = await Risk.find({ userId }).sort({ createdAt: -1 }).limit(1);
   
       if (!riskData || riskData.length === 0) {
@@ -118,7 +118,7 @@ exports.getRiskProfile = async (req, res) => {
         });
       }
   
-      // Since we're using .find().sort().limit(1), riskData is an array, so we need to access the first element
+      
       const latestRiskData = riskData[0];
   
       res.status(200).json({

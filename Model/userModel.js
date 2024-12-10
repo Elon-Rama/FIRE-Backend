@@ -13,7 +13,7 @@ const ProfileSchema = new mongoose.Schema({
         required: false,
     },
     dob: {
-        type: Date,
+        type: String,
         required: false,
     },
     gender: {
@@ -21,11 +21,23 @@ const ProfileSchema = new mongoose.Schema({
         enum: ['male', 'female', 'other'],
         required: false,
     },
+    address:{
+        type:String,
+        required:false,
+    },
+    city:{
+        type:String,
+        required:false,
+    },
+    occupation:{
+        type:String,
+        required:false,
+    },
     contactNumber: {
         type: String,
         required: false,
     },
-    interestedInFhir: {
+    interestedInFIFP: {
         type: Boolean,
         required: false,
     },

@@ -3,8 +3,17 @@ const User = require("../../Model/emailModel");
 
 exports.Create = async (req, res) => {
   //#swagger.tags = ['User-Profile']
-  const { userId, name, dob, gender, contactNumber, interestedInFhir } =
-    req.body;
+  const {
+    userId,
+    name,
+    dob,
+    gender,
+    address,
+    city,
+    occupation,
+    contactNumber,
+    interestedInFIFP,
+  } = req.body;
 
   try {
     const existingUser = await User.findById(userId);
@@ -20,14 +29,18 @@ exports.Create = async (req, res) => {
       name,
       dob,
       gender,
+      address,
+      city,
+      occupation,
       contactNumber,
-      interestedInFhir,
+      interestedInFIFP,
     });
 
     await userProfile.save();
     res.status(201).json({
       success: true,
       message: "User profile created successfully",
+
       userProfile,
     });
   } catch (error) {
@@ -110,7 +123,16 @@ exports.getAll = async (req, res) => {
 exports.update = async (req, res) => {
   //#swagger.tags = ['User-Profile']
   const { profile_id } = req.params;
-  const { name, dob, gender, contactNumber, interestedInFhir } = req.body;
+  const {
+    name,
+    dob,
+    gender,
+    address,
+    city,
+    occupation,
+    contactNumber,
+    interestedInFIFP,
+  } = req.body;
 
   try {
     const userProfile = await Profile.findByIdAndUpdate(
@@ -119,8 +141,11 @@ exports.update = async (req, res) => {
         name,
         dob,
         gender,
+        address,
+        city,
+        occupation,
         contactNumber,
-        interestedInFhir,
+        interestedInFIFP,
       },
       { new: true, runValidators: true }
     );

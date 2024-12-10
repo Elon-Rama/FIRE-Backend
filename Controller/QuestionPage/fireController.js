@@ -21,8 +21,8 @@ exports.Create = async (req, res) => {
   //#swagger.tags = ['FIRE-Question']
   const {
     userId,
-    occupation,
-    city,
+    // occupation,
+    // city,
     age,
     retireage,
     expense,
@@ -37,8 +37,8 @@ exports.Create = async (req, res) => {
   // Validate required fields
   if (
     !userId ||
-    !occupation ||
-    !city ||
+    // !occupation ||
+    // !city ||
     !age ||
     !retireage ||
     !expense ||
@@ -66,8 +66,8 @@ exports.Create = async (req, res) => {
 
     const fireQuestionData = new FireQuestion({
       userId,
-      occupation,
-      city,
+      // occupation,
+      // city,
       age,
       retireage,
       expense,
@@ -92,8 +92,8 @@ exports.Create = async (req, res) => {
       fireId: fireQuestionData._id, // Only sending fireId here
       fireQuestionData: {
         userId: fireQuestionData.userId,
-        occupation: fireQuestionData.occupation,
-        city: fireQuestionData.city,
+        // occupation: fireQuestionData.occupation,
+        // city: fireQuestionData.city,
         age: fireQuestionData.age,
         retireage: fireQuestionData.retireage,
         expense: fireQuestionData.expense,
