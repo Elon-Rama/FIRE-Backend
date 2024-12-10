@@ -37,10 +37,10 @@ const ProfileSchema = new mongoose.Schema({
         type: String,
         required: false,
     },
-    interestedInFIFP: {
-        type: Boolean,
-        required: false,
-    },
+    // interestedInFIFP: {
+    //     type: Boolean,
+    //     required: false,
+    // },
 }, {
     timestamps: true 
 });

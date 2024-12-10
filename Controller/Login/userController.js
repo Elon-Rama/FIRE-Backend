@@ -12,7 +12,7 @@ exports.Create = async (req, res) => {
     city,
     occupation,
     contactNumber,
-    interestedInFIFP,
+    // interestedInFIFP,
   } = req.body;
 
   try {
@@ -33,7 +33,7 @@ exports.Create = async (req, res) => {
       city,
       occupation,
       contactNumber,
-      interestedInFIFP,
+      // interestedInFIFP,
     });
 
     await userProfile.save();
@@ -131,7 +131,7 @@ exports.update = async (req, res) => {
     city,
     occupation,
     contactNumber,
-    interestedInFIFP,
+    // interestedInFIFP,
   } = req.body;
 
   try {
@@ -145,7 +145,7 @@ exports.update = async (req, res) => {
         city,
         occupation,
         contactNumber,
-        interestedInFIFP,
+        // interestedInFIFP,
       },
       { new: true, runValidators: true }
     );

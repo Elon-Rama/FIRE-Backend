@@ -257,9 +257,6 @@
                 },
                 "contactNumber": {
                   "example": "any"
-                },
-                "interestedInFIFP": {
-                  "example": "any"
                 }
               }
             }
@@ -420,9 +417,6 @@
                   "example": "any"
                 },
                 "contactNumber": {
-                  "example": "any"
-                },
-                "interestedInFIFP": {
                   "example": "any"
                 }
               }
