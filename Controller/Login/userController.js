@@ -1,6 +1,68 @@
 const Profile = require("../../Model/userModel");
 const User = require("../../Model/emailModel");
 
+// exports.Create = async (req, res) => {
+//   //#swagger.tags = ['User-Profile']
+//   const {
+//     userId,
+//     firstName,
+//     lastName,
+//     dob,
+//     gender,
+//     address,
+//     city,
+//     occupation,
+//     contactNumber,
+//     profile
+//     // interestedInFIFP,
+//   } = req.body;
+
+
+//   try {
+//     const existingUser = await User.findById(userId);
+//     if (!existingUser) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "User not found. User profile cannot be created.",
+//       });
+//     }
+//     let base64Data = ""
+//     if(profile){
+//       base64Data=Buffer.from(profile).toString('base64')
+//     }
+
+
+//     const userProfile = new Profile({
+//       userId,
+//       firstName,
+//       lastName,
+//       dob,
+//       gender,
+//       address,
+//       city,
+//       occupation,
+//       contactNumber,
+//       profile:base64Data
+//       // interestedInFIFP,
+//     });
+
+
+//     await userProfile.save();
+//     res.status(201).json({
+//       success: true,
+//       message: "User profile created successfully",
+
+
+//       userProfile,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Error creating user profile",
+//       error: error.message,
+//     });
+//   }
+// };
 exports.Create = async (req, res) => {
   //#swagger.tags = ['User-Profile']
   const {
@@ -13,10 +75,7 @@ exports.Create = async (req, res) => {
     city,
     occupation,
     contactNumber,
-    profile
-    // interestedInFIFP,
   } = req.body;
-
 
   try {
     const existingUser = await User.findById(userId);
@@ -26,11 +85,17 @@ exports.Create = async (req, res) => {
         message: "User not found. User profile cannot be created.",
       });
     }
-    let base64Data = ""
-    if(profile){
-      base64Data=Buffer.from(profile).toString('base64')
-    }
 
+    let base64Data = "";
+
+    if (req.file) {
+      // If the client sends an image file (multipart/form-data)
+      const imageBuffer = fs.readFileSync(req.file.path); // Reading file from the path
+      base64Data = imageBuffer.toString('base64'); // Convert to base64
+    } else if (req.body.profile) {
+      // If the client sends base64 string directly in request body
+      base64Data = req.body.profile;
+    }
 
     const userProfile = new Profile({
       userId,
@@ -42,17 +107,13 @@ exports.Create = async (req, res) => {
       city,
       occupation,
       contactNumber,
-      profile:base64Data
-      // interestedInFIFP,
+      profile: base64Data,
     });
-
 
     await userProfile.save();
     res.status(201).json({
       success: true,
       message: "User profile created successfully",
-
-
       userProfile,
     });
   } catch (error) {
@@ -63,7 +124,6 @@ exports.Create = async (req, res) => {
     });
   }
 };
-
 exports.getById = async (req, res) => {
   //#swagger.tags = ['User-Profile']
   try {
