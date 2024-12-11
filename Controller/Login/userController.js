@@ -5,15 +5,18 @@ exports.Create = async (req, res) => {
   //#swagger.tags = ['User-Profile']
   const {
     userId,
-    name,
+    firstName,
+    lastName,
     dob,
     gender,
     address,
     city,
     occupation,
     contactNumber,
+    profile
     // interestedInFIFP,
   } = req.body;
+
 
   try {
     const existingUser = await User.findById(userId);
@@ -23,23 +26,32 @@ exports.Create = async (req, res) => {
         message: "User not found. User profile cannot be created.",
       });
     }
+    let base64Data = ""
+    if(profile){
+      base64Data=Buffer.from(profile).toString('base64')
+    }
+
 
     const userProfile = new Profile({
       userId,
-      name,
+      firstName,
+      lastName,
       dob,
       gender,
       address,
       city,
       occupation,
       contactNumber,
+      profile:base64Data
       // interestedInFIFP,
     });
+
 
     await userProfile.save();
     res.status(201).json({
       success: true,
       message: "User profile created successfully",
+
 
       userProfile,
     });
@@ -124,31 +136,43 @@ exports.update = async (req, res) => {
   //#swagger.tags = ['User-Profile']
   const { profile_id } = req.params;
   const {
-    name,
+    firstName,
+    lastName,
     dob,
     gender,
     address,
     city,
     occupation,
     contactNumber,
+    profile
     // interestedInFIFP,
   } = req.body;
+
+
+  let base64Data = ""
+  if(profile){
+    base64Data=Buffer.from(profile).toString('base64')
+  }
+
 
   try {
     const userProfile = await Profile.findByIdAndUpdate(
       profile_id,
       {
-        name,
+        firstName,
+        lastName,
         dob,
         gender,
         address,
         city,
         occupation,
         contactNumber,
+        profile:base64Data
         // interestedInFIFP,
       },
       { new: true, runValidators: true }
     );
+
 
     if (!userProfile) {
       return res.status(404).json({
@@ -156,6 +180,7 @@ exports.update = async (req, res) => {
         message: "User profile not found. Cannot update.",
       });
     }
+
 
     res.status(200).json({
       success: true,

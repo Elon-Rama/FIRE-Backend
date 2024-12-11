@@ -237,7 +237,10 @@
                 "userId": {
                   "example": "any"
                 },
-                "name": {
+                "firstName": {
+                  "example": "any"
+                },
+                "lastName": {
                   "example": "any"
                 },
                 "dob": {
@@ -256,6 +259,9 @@
                   "example": "any"
                 },
                 "contactNumber": {
+                  "example": "any"
+                },
+                "profile": {
                   "example": "any"
                 }
               }
@@ -398,7 +404,10 @@
             "schema": {
               "type": "object",
               "properties": {
-                "name": {
+                "firstName": {
+                  "example": "any"
+                },
+                "lastName": {
                   "example": "any"
                 },
                 "dob": {
@@ -417,6 +426,9 @@
                   "example": "any"
                 },
                 "contactNumber": {
+                  "example": "any"
+                },
+                "profile": {
                   "example": "any"
                 }
               }

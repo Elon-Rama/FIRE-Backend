@@ -8,7 +8,14 @@ const ProfileSchema = new mongoose.Schema({
         unique: true, 
         ref: 'User' 
     },
-    name: {
+    profile:{
+        type:String,
+    },
+    firstName: {
+        type: String,
+        required: false,
+    },
+    lastName:{
         type: String,
         required: false,
     },
