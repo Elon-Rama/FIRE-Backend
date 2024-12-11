@@ -26,10 +26,10 @@ exports.Create = async (req, res) => {
         message: "User not found. User profile cannot be created.",
       });
     }
-    // let base64Data = ""
-    // if(profile){
-    //   base64Data=Buffer.from(profile).toString('base64')
-    // }
+    let base64Data = ""
+    if(profile){
+      base64Data=Buffer.from(profile).toString('base64')
+    }
 
 
     const userProfile = new Profile({
@@ -42,7 +42,7 @@ exports.Create = async (req, res) => {
       city,
       occupation,
       contactNumber,
-      profile
+      profile:base64Data
       // interestedInFIFP,
     });
 
@@ -149,10 +149,10 @@ exports.update = async (req, res) => {
   } = req.body;
 
 
-  // let base64Data = ""
-  // if(profile){
-  //   base64Data=Buffer.from(profile).toString('base64')
-  // }
+  let base64Data = ""
+  if(profile){
+    base64Data=Buffer.from(profile).toString('base64')
+  }
 
 
   try {
@@ -167,8 +167,8 @@ exports.update = async (req, res) => {
         city,
         occupation,
         contactNumber,
-        profile
-        // profile:base64Data
+        // profile
+        profile:base64Data
         // interestedInFIFP,
       },
       { new: true, runValidators: true }
