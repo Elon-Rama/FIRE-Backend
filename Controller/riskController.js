@@ -103,38 +103,123 @@ exports.saveRiskProfile = async (req, res) => {
 //     });
 //   }
 // };
+const assetsAllocationDetails = (riskTotalScore)=>{
+  if (riskTotalScore >= 6 && riskTotalScore <= 10) {
+    return {
+      DebtInstruments:"60-80%",
+      Stocks:"10-20%",
+      CashEquivalents:"10-20%",
+      RealEstate:"0-10%",
+      AlternativeInvestments :"0%"
+    };
+  } else if (riskTotalScore >= 11 && riskTotalScore <= 15) {
+    return {
+      DebtInstruments:"50-60%",
+      Stocks:"25-35%",
+      CashEquivalents:"10-20%",
+      RealEstate:"0-10%",
+      AlternativeInvestments :"0%"
+    };
+  } else if (riskTotalScore >= 16 && riskTotalScore <= 20) {
+    return {
+      DebtInstruments:"40-50%",
+      Stocks:"40-50%",
+      CashEquivalents:"05-10%",
+      RealEstate:"0-10%",
+      AlternativeInvestments :"0%"
+    };
+  } else if (riskTotalScore >= 21 && riskTotalScore <= 25) {
+    return {
+      DebtInstruments:"20-30%",
+      Stocks:"50-70%",
+      CashEquivalents:"05-10%",
+      RealEstate:"0-10%",
+      AlternativeInvestments :"0%"
+    };
+  } else {
+    return {
+      DebtInstruments:"10-20%",
+      Stocks:"60-80%",
+      CashEquivalents:"0-10%",
+      RealEstate:"0-10%",
+      AlternativeInvestments :"10-20%"
+    };
+  }
+}
+
+// exports.getRiskProfile = async (req, res) => {
+//     //#swagger.tags = ['PersonalRisk-Tolerance']
+//     try {
+//       const { userId } = req.query;
+  
+      
+//       const riskData = await Risk.find({ userId }).sort({ createdAt: -1 }).limit(1);
+  
+//       if (!riskData || riskData.length === 0) {
+//         return res.status(404).json({
+//           statuscode: "1",
+//           message: "No risk profile found for this user",
+//         });
+//       }
+  
+      
+//       const latestRiskData = riskData[0];
+  
+//       res.status(200).json({
+//         statuscode: "0",
+//         message: "Data retrieved successfully",
+//         userId: latestRiskData.userId,
+//         data: latestRiskData.answers,
+//         totalScore: latestRiskData.totalScore,
+//         status: latestRiskData.riskProfile,
+//       });
+//     } catch (error) {
+//       res.status(500).json({
+//         statuscode: "1",
+//         message: "An error occurred",
+//         error: error.message,
+//       });
+//     }
+//   };
 exports.getRiskProfile = async (req, res) => {
-    //#swagger.tags = ['PersonalRisk-Tolerance']
-    try {
-      const { userId } = req.query;
-  
-      
-      const riskData = await Risk.find({ userId }).sort({ createdAt: -1 }).limit(1);
-  
-      if (!riskData || riskData.length === 0) {
-        return res.status(404).json({
-          statuscode: "1",
-          message: "No risk profile found for this user",
-        });
-      }
-  
-      
-      const latestRiskData = riskData[0];
-  
-      res.status(200).json({
-        statuscode: "0",
-        message: "Data retrieved successfully",
-        userId: latestRiskData.userId,
-        data: latestRiskData.answers,
-        totalScore: latestRiskData.totalScore,
-        status: latestRiskData.riskProfile,
-      });
-    } catch (error) {
-      res.status(500).json({
+  //#swagger.tags = ['PersonalRisk-Tolerance']
+  try {
+    const { userId } = req.query;
+
+   
+    const riskData = await Risk.find({ userId }).sort({ createdAt: -1 }).limit(1);
+
+    if (!riskData || riskData.length === 0) {
+      return res.status(404).json({
         statuscode: "1",
-        message: "An error occurred",
-        error: error.message,
+        message: "No risk profile found for this user",
       });
     }
-  };
-  
+
+ 
+    const latestRiskData = riskData[0];
+    const riskTotalScore = latestRiskData.totalScore
+    if (!riskTotalScore || typeof riskTotalScore !== "number") {
+      return res.status(400).json({
+        statuscode: "1",
+        message: "Invalid risk total score",
+      });
+    }
+     const assetAllocation = assetsAllocationDetails(riskTotalScore)
+    res.status(200).json({
+      statuscode: "0",
+      message: "Data retrieved successfully",
+      userId: latestRiskData.userId,
+      data: latestRiskData.answers,
+      totalScore: riskTotalScore,
+      assetAllocationScore: [assetAllocation],
+      status: latestRiskData.riskProfile,
+    });
+  } catch (error) {
+    res.status(500).json({
+      statuscode: "1",
+      message: "An error occurred",
+      error: error.message,
+    });
+  }
+};

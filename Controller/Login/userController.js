@@ -17,7 +17,6 @@ const User = require("../../Model/emailModel");
 //     // interestedInFIFP,
 //   } = req.body;
 
-
 //   try {
 //     const existingUser = await User.findById(userId);
 //     if (!existingUser) {
@@ -30,7 +29,6 @@ const User = require("../../Model/emailModel");
 //     if(profile){
 //       base64Data=Buffer.from(profile).toString('base64')
 //     }
-
 
 //     const userProfile = new Profile({
 //       userId,
@@ -46,12 +44,10 @@ const User = require("../../Model/emailModel");
 //       // interestedInFIFP,
 //     });
 
-
 //     await userProfile.save();
 //     res.status(201).json({
 //       success: true,
 //       message: "User profile created successfully",
-
 
 //       userProfile,
 //     });
@@ -91,7 +87,7 @@ exports.Create = async (req, res) => {
     if (req.file) {
       // If the client sends an image file (multipart/form-data)
       const imageBuffer = fs.readFileSync(req.file.path); // Reading file from the path
-      base64Data = imageBuffer.toString('base64'); // Convert to base64
+      base64Data = imageBuffer.toString("base64"); // Convert to base64
     } else if (req.body.profile) {
       // If the client sends base64 string directly in request body
       base64Data = req.body.profile;
@@ -175,9 +171,12 @@ exports.deleteById = async (req, res) => {
 
 // Get all user profiles
 exports.getAll = async (req, res) => {
-  //#swagger.tags = ['User-Profile']
+  //#swagger.tags = ['Emergency-Fund']
+  const { userId } = req.query;
+
   try {
-    const profiles = await Profile.find();
+    const profiles = await Profile.find({ userId });
+
     return res.status(200).json({
       statusCode: "0",
       message: "UserProfile data retrieved successfully",
@@ -188,6 +187,7 @@ exports.getAll = async (req, res) => {
     return res.status(500).json({
       statusCode: "1",
       message: "Failed to retrieve userProfile data",
+      error: error.message,
     });
   }
 };
@@ -204,16 +204,18 @@ exports.update = async (req, res) => {
     city,
     occupation,
     contactNumber,
-    profile
+    profile,
     // interestedInFIFP,
   } = req.body;
 
+  let base64Data = "";
 
-  let base64Data = ""
-  if(profile){
-    base64Data=Buffer.from(profile).toString('base64')
+  if (req.file) {
+    const imageBuffer = fs.readFileSync(req.file.path);
+    base64Data = imageBuffer.toString("base64");
+  } else if (req.body.profile) {
+    base64Data = req.body.profile;
   }
-
 
   try {
     const userProfile = await Profile.findByIdAndUpdate(
@@ -228,12 +230,11 @@ exports.update = async (req, res) => {
         occupation,
         contactNumber,
         // profile
-        profile:base64Data
+        profile: base64Data,
         // interestedInFIFP,
       },
       { new: true, runValidators: true }
     );
-
 
     if (!userProfile) {
       return res.status(404).json({
@@ -241,7 +242,6 @@ exports.update = async (req, res) => {
         message: "User profile not found. Cannot update.",
       });
     }
-
 
     res.status(200).json({
       success: true,
